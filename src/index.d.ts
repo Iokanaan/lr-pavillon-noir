@@ -1,8 +1,5 @@
 //@ts-check
 
-import { AttributeInputName, SkillConcInputName, SkillEntryData, SkillExpInputName } from "./skill/types/skillTypes";
-import { WeaponSizeId, WeaponWieldingId, WeaponData } from "./weapon/types/weaponData";
-
 declare global { 
 
     interface Signal<T> {

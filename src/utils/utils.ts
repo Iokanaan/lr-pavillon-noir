@@ -22,7 +22,7 @@ export const wordToInt = function(str: string) {
     let neg = false
     if(str.startsWith("Z")) {
         str = str.substring(1)
-      neg = true
+        neg = true
     } 
     const chars = str.split('')
     let res = ''

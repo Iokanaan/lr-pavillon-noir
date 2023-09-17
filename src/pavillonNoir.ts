@@ -7,12 +7,9 @@ init = function(sheet) {
     if(sheet.id() === "main") {
         const pSheet = pavillonSheet(sheet)
         Tables.get("attributs").each(function(attr: Attribut) {
-          log("set attr")
             setupAttribut(pSheet, attr)
         })
-        log("set roll")
         setupRollSelection(pSheet)
-        log("done")
         const optionalCompSlots: Record<string, number> = {
             "religion": 2,
             "conn_specialisee": 2

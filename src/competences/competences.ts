@@ -2,9 +2,7 @@ import { computed, signal } from "../utils/utils"
 
 export const setupRollSelection = function(sheet: PavillonSheet) {
     const outlineSelected = function(comp: Competence) {
-        log(sheet.selectedComp)
         const selectedComp = sheet.selectedComp()
-        log(selectedComp)
         if(selectedComp === undefined || comp.id !== selectedComp.id) {
             sheet.find(comp.id + "_label").removeClass("text-info")
         } else {
@@ -13,7 +11,6 @@ export const setupRollSelection = function(sheet: PavillonSheet) {
     }
     const setSelectedComp = function(comp: Competence) {
         const selectedComp = sheet.selectedComp()
-        log(selectedComp)
         sheet.find(comp.id + "_label").on("click", function(cmp) {
             if(selectedComp === undefined || selectedComp.id !== comp.id) {
                 sheet.selectedComp.set({"id": comp.id, "name": cmp.text()})
@@ -32,7 +29,6 @@ export const setupRollSelection = function(sheet: PavillonSheet) {
 
 
 export const setupOptionalGroup = function(sheet: Sheet, key: string, maxSlots: number) {
-  log("set optional groupe")
     const rowVisibilities: Signal<boolean>[] = []
     for(let i=1; i<=maxSlots; i++) {
         const rowVisible = setupOptionalRow(sheet, key, i)
@@ -55,9 +51,9 @@ export const setupOptionalGroup = function(sheet: Sheet, key: string, maxSlots: 
             slotsLeft = slotsLeft || !rowVisibilities[i]() 
         }
         if(slotsLeft) {
-          sheet.get("add_" + key).show()
+            sheet.get("add_" + key).show()
         } else {
-          sheet.get("add_" + key).hide()
+            sheet.get("add_" + key).hide()
         }
   }, rowVisibilities)
 }
