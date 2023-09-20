@@ -77,3 +77,12 @@ export const hideDescriptions = function(repeater: Component<Record<string, unkn
         repeater.find(entryId).find(descId).hide()
     })
 }
+
+export const mapCompetence = function(entity: CompetenceEntity): Competence {
+    return {
+        id: entity.id,
+        name: entity.name,
+        cc: entity.cc === "true",
+        metier: entity.metier === "true"
+    }
+}

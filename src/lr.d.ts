@@ -27,14 +27,10 @@ declare global {
     
     declare const Tables: Tables;
     interface Tables {
-        get(elem: 'skills_basic'): Table<SkillBasicEntity>
-        get(elem: 'races'): Table<Race>
-        get(elem: 'competences_av'): Table<SkillAvEntity>
-        get(elem: 'carriere'): Table<Carriere>
-        get(elem: 'talents'): Table<Talent>
-        get(elem: 'groupe_armes'): Table<GroupeArme>
-        get(elem: 'magies_communes' | 'domaines_occultes' | 'sombres_savoirs' | 'domaines_divins'): Table<DomaineMagie>
-        get(elem: 'magie_mineure'): Table<Spell>
+        get(elem: 'attributs'): Table<AttributEntity>
+        get(elem: 'comp_maritimes' | 'comp_connaissances' | 'comp_techniques' | 'comp_physiques' | 'comp_sociales' | 'comp_combat'): Table<CompetenceEntity>
+        get(elem: 'professions'): Table<ProfessionEntity>
+        get(elem: 'types_professions'): Table<ProfessionTypeEntity>
         get(id: string): Table
     }
     
@@ -97,6 +93,8 @@ declare global {
     }
     
     type DiceResultCallback = (e: string, callback: (sheet: Sheet<unknown>) => void) => void;
+
+    declare const _: (s: string) => string
 
 }
 

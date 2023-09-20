@@ -1,4 +1,4 @@
-import { computed, signal } from "../utils/utils"
+import { computed, mapCompetence, signal } from "../utils/utils"
 
 export const setupRollSelection = function(sheet: PavillonSheet) {
     const outlineSelected = function(comp: Competence) {
@@ -13,18 +13,27 @@ export const setupRollSelection = function(sheet: PavillonSheet) {
         const selectedComp = sheet.selectedComp()
         sheet.find(comp.id + "_label").on("click", function(cmp) {
             if(selectedComp === undefined || selectedComp.id !== comp.id) {
-                sheet.selectedComp.set({"id": comp.id, "name": cmp.text()})
+                if(comp.name === undefined) {
+                    comp.name = cmp.text()
+                }
+                sheet.selectedComp.set(comp)
             } else {
                 sheet.selectedComp.set(undefined)
             }
         })
     }
     computed(function() {
-        Tables.get("comp_maritimes").each(function(comp: Competence) { outlineSelected(comp) })
-        Tables.get("comp_connaissances").each(function(comp: Competence) { outlineSelected(comp) })
+        Tables.get("comp_maritimes").each(function(comp: CompetenceEntity) { outlineSelected(mapCompetence(comp)) })
+        Tables.get("comp_connaissances").each(function(comp: CompetenceEntity) { outlineSelected(mapCompetence(comp)) })
+        Tables.get("comp_techniques").each(function(comp: CompetenceEntity) { outlineSelected(mapCompetence(comp)) })
+        Tables.get("comp_physiques").each(function(comp: CompetenceEntity) { outlineSelected(mapCompetence(comp)) })
+        Tables.get("comp_sociales").each(function(comp: CompetenceEntity) { outlineSelected(mapCompetence(comp)) })
     }, [sheet.selectedComp])
-    Tables.get("comp_maritimes").each(function(comp: Competence) { setSelectedComp(comp) })
-    Tables.get("comp_connaissances").each(function(comp: Competence) { setSelectedComp(comp) })
+    Tables.get("comp_maritimes").each(function(comp: CompetenceEntity) { setSelectedComp(mapCompetence(comp)) })
+    Tables.get("comp_connaissances").each(function(comp: CompetenceEntity) { setSelectedComp(mapCompetence(comp)) })
+    Tables.get("comp_techniques").each(function(comp: CompetenceEntity) { setSelectedComp(mapCompetence(comp)) })
+    Tables.get("comp_physiques").each(function(comp: CompetenceEntity) { setSelectedComp(mapCompetence(comp)) })
+    Tables.get("comp_sociales").each(function(comp: CompetenceEntity) { setSelectedComp(mapCompetence(comp)) })
 }
 
 

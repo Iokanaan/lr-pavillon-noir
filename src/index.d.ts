@@ -25,19 +25,58 @@ declare global {
 
     type PavillonSheet = {
         entryStates: Record<string, Record<string, RepeaterState | undefined>>,
-        selectedComp: Signal<Competence | undefined>
+        selectedComp: Signal<Competence | undefined>,
+        professions: Signal<Profession | undefined>[],
+        attr: Record<string, Signal<number>>
     } & ExtendedSheet<CharData>
 
     type Competence = {
         id: string,
-        name: string
+        name: string,
+        cc: boolean,
+        metier: boolean,
     }
-    
+
+    type CompetenceEntity = {
+        id: string,
+        name: string,
+        cc: string,
+        metier: string
+    }
+
     type Attribut = {
         id: string,
         name: string
     }
+    
+    type AttributEntity = {
+        id: string,
+        name: string
+    }
 
+    type ProfessionEntity = {
+        id: string,
+        name: string, 
+        attr_1: string,
+        attr_2: string,
+        type: string
+    }
+
+    type Profession = {
+        name: string, 
+        attr_1: string,
+        attr_2: string
+    }
+
+    type ProfessionTypeEntity = {
+        id: string,
+        name: string
+    }
+
+    type ProfessionType = {
+        id: string,
+        name: string
+    }
 } 
 
 export {}
