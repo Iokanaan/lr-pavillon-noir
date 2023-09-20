@@ -1,7 +1,10 @@
 import { pavillonSheet } from "./pavillonSheet"
-import { setupOptionalGroup, setupRollSelection } from "./competences/competences"
+import { refreshReputationPoints, setupDisplayedReputationPoints, setupOptionalGroup, setupRollSelection } from "./competences/competences"
 import { setupAttribut, setupValeurMetier } from "./attributs/attributs"
-import { setupProfession, setupTitre } from "./bio/bio"
+import { setupAvantageEditEntry, setupFaiblesseEditEntry, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupTitre } from "./bio/bio"
+import { reputationListener } from "./reputation/reputation"
+import { setupRepeater } from "./utils/repeaters"
+import { setupDisplayedBlessures } from "./combat/blessures"
 
 
 init = function(sheet) {
@@ -24,8 +27,22 @@ init = function(sheet) {
         each(optionalCompSlots, function(val, key) {
             setupOptionalGroup(sheet, key, val)
         })
+        reputationListener(pSheet, "inf")
+        reputationListener(pSheet, "glo")
+        setupDisplayedReputationPoints(pSheet, "glo")
+        setupDisplayedReputationPoints(pSheet, "inf")
+        refreshReputationPoints(pSheet, "glo")
+        refreshReputationPoints(pSheet, "inf")
         setupTitre(pSheet)
-        setupProfession(pSheet)
+        setupProfession(pSheet, "profession", 2)
+        setupProfession(pSheet, "poste_bord", 1)
+        setupPeuple(pSheet)
+        setupOrigine(pSheet)
+        setupJeunesse(pSheet, 1)
+        setupJeunesse(pSheet, 2)
+        setupRepeater(pSheet, "avantage_repeater", setupAvantageEditEntry, null, null)
+        setupRepeater(pSheet, "faiblesse_repeater", setupFaiblesseEditEntry, null, null)
+        setupDisplayedBlessures(pSheet)
     }  
 }
 

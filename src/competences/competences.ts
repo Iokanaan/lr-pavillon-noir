@@ -101,4 +101,33 @@ const setupOptionalRow = function(sheet: Sheet, key: string, num: number) {
 
     return rowVisible
 }
+
+export const refreshReputationPoints = function(sheet: PavillonSheet, typeRep: "glo" | "inf") {
+    sheet.find("refresh_" + typeRep).on("click", function() {
+        for(let i=1;i<=10;i++) {
+            sheet.find(typeRep + "_" + i).value(false)
+        }
+    })
+}
+
+export const setupDisplayedReputationPoints = function(sheet: PavillonSheet, typeRep: "glo" | "inf") {
+    computed(function() {
+        const reputation = sheet.reputation[typeRep]()
+        let something = false
+        for(let i=1;i<=10; i++) {
+            log(i)
+            if(reputation >= i) {
+                something = true
+                sheet.find(typeRep + "_" + i).show()
+            } else {
+                sheet.find(typeRep + "_" + i).hide()
+            }
+        }
+        if(something) {
+            sheet.find(typeRep + "_bonus_points").show()
+        } else {
+            sheet.find(typeRep + "_bonus_points").hide()
+        }
+    }, [sheet.reputation[typeRep]])
+}
     

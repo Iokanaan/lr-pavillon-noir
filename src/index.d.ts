@@ -27,7 +27,9 @@ declare global {
         entryStates: Record<string, Record<string, RepeaterState | undefined>>,
         selectedComp: Signal<Competence | undefined>,
         professions: Signal<Profession | undefined>[],
+        posteBord: Signal<Profession | undefined>,
         attr: Record<string, Signal<number>>
+        reputation: Record<"glo" | "inf", Computed<number>>
     } & ExtendedSheet<CharData>
 
     type Competence = {
@@ -62,6 +64,11 @@ declare global {
         type: string
     }
 
+    type ReputationEntity = {
+        id: string,
+        name: string   
+    }
+
     type Profession = {
         name: string, 
         attr_1: string,
@@ -74,6 +81,16 @@ declare global {
     }
 
     type ProfessionType = {
+        id: string,
+        name: string
+    }
+
+    type AvantageEntity = {
+        id: string,
+        name: string
+    }
+
+    type Avantage = {
         id: string,
         name: string
     }
