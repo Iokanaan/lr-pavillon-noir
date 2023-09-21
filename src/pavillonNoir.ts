@@ -5,6 +5,7 @@ import { setupAvantageEditEntry, setupFaiblesseEditEntry, setupJeunesse, setupOr
 import { reputationListener } from "./reputation/reputation"
 import { setupRepeater } from "./utils/repeaters"
 import { setupDisplayedBlessures } from "./combat/blessures"
+import { setupWeaponEditEntry } from "./combat/armes"
 
 
 init = function(sheet) {
@@ -25,7 +26,7 @@ init = function(sheet) {
             "langue_etrangere": 3
         }
         each(optionalCompSlots, function(val, key) {
-            setupOptionalGroup(sheet, key, val)
+            setupOptionalGroup(pSheet, key, val)
         })
         reputationListener(pSheet, "inf")
         reputationListener(pSheet, "glo")
@@ -43,6 +44,7 @@ init = function(sheet) {
         setupRepeater(pSheet, "avantage_repeater", setupAvantageEditEntry, null, null)
         setupRepeater(pSheet, "faiblesse_repeater", setupFaiblesseEditEntry, null, null)
         setupDisplayedBlessures(pSheet)
+        setupRepeater(pSheet, "weapon_repeater", setupWeaponEditEntry, null, null)
     }  
 }
 

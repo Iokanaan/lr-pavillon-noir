@@ -54,7 +54,6 @@ export const setupTitre = function(sheet: PavillonSheet) {
         titre.set(cmp.value())
     })
     computed(function() {
-        log(titre())
         if(titre() === "") {
             sheet.find("titre_label").hide()
             sheet.find("no_titre").show()
@@ -280,7 +279,6 @@ const setupSingleProfession = function(sheet: PavillonSheet, professionByType: R
                 sheet.find("custom_" + typeMetier + "_" + num).hide()
                 sheet.find("record_" + typeMetier + "_" + num).hide()
                 sheet.find(typeMetier + "_label_" + num).show()
-                log("show " + "remove_" + typeMetier + "_" + num)
                 sheet.find("remove_" + typeMetier + "_" + num).show()
                 break
         }
@@ -294,7 +292,6 @@ const setupSingleProfession = function(sheet: PavillonSheet, professionByType: R
         sheet.find("attr_2_" + typeMetier + "_" + num).value(selectedProfession.attr_2)
     });
 
-    log("setup click on " + "remove_" + typeMetier + "_" + num)
     sheet.find("remove_" + typeMetier + "_" + num).on("click", function() {
         metierSignals[num - 1].set(undefined)
     })
@@ -327,12 +324,10 @@ const setupSingleProfession = function(sheet: PavillonSheet, professionByType: R
 
     computed(function() {
         const profession = metierSignals[num - 1]()
-        log(profession)
         if(profession !== undefined) {
             sheet.find(typeMetier + "_label_" + num).value(profession.name)
             sheet.find("remove_" + typeMetier + "_" + num).show()
         } else {
-            log("set to undefined " + typeMetier + "_" + num)
             sheet.find(typeMetier + "_label_" + num).value("")
             sheet.find(typeMetier + "_input_" + num).value("")
             sheet.find("remove_" + typeMetier + "_" + num).hide()

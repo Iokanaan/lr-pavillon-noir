@@ -94,6 +94,30 @@ declare global {
         id: string,
         name: string
     }
+
+    type TypeArme = "cac" | "feu" | "jet" | "trait"
+    type AttributEnum = "ADR" | "ADA" | "RES" | "FOR" | "ERU" | "PER" | "EXP" | "CHA" | "POU"
+    type Modificateur = "MDFor" | "MDAdr"
+    type LongueurArme = "courte" | "longue" | "tres_longue"
+
+    type WeaponData = {
+        type_arme_choice: TypeArme,
+        nom_arme_input: string,
+        attr_arme_choice: AttributEnum
+        modif_eff_input: number,
+        modif_fac_input: number,
+        modif_degats_choice: "0" | Modificateur,
+        longueur_arme_choice: LongueurArme,
+        longueur_arme_input: string,
+        competence_arme_choice: string,
+        nb_mains_input: 1 | 2,
+        portee_input: number,
+        recharge_input: string,
+        degats_input: number,
+        notes_input: string,
+        has_modificateur_degats: boolean,
+        type_arme_int: 1 | 2 | 3 | 4
+    }
 } 
 
 export {}
