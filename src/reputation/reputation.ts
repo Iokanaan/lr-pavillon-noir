@@ -4,12 +4,14 @@ export const reputationListener = function(sheet: PavillonSheet, typeRep: "glo" 
     const reputationScore = signal((sheet.find(typeRep + "_points") as Component<number>).value());
     
     (sheet.find(typeRep + "_points") as Component<number>).on("update", function(cmp) {
+        log("set" + cmp.value())
         reputationScore.set(cmp.value())
     })
 
     const levels = Tables.get(typeRep)
     sheet.reputation[typeRep] = computed(function() {
         const rep = reputationScore() 
+        log("porcess"  + rep)
         if(rep < 50) {
             return 0
         }
@@ -44,17 +46,9 @@ export const reputationListener = function(sheet: PavillonSheet, typeRep: "glo" 
     }, [reputationScore])
 
     computed(function() {
+        log("refresh label")
         sheet.find(typeRep + "_label").value(_(Tables.get(typeRep).get(sheet.reputation[typeRep]().toString()).name))
     }, [sheet.reputation[typeRep]])
 
-    computed(function() {
-        const reputation = sheet.reputation[typeRep]()
-        for(let i=1;i<=10; i++) {
-            if(reputation >= i) {
-                sheet.find(typeRep + "_" + i).show()
-            } else {
-                sheet.find(typeRep + "_" + i).hide()
-            }
-        }
-    }, [sheet.reputation[typeRep]])
+
 }

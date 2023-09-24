@@ -48,7 +48,6 @@ export const setupOptionalGroup = function(sheet: PavillonSheet, key: string, ma
         for(let i=1; i<=maxSlots; i++) {
             if(!sheet.find(key + "_" + i + "_val").visible()) {
                 sheet.find(key + "_" + i + "_input").show()
-                sheet.find(key + "_" + i + "_val").show()
                 rowVisibilities[i-1].set(true)
                 break
             }
@@ -67,6 +66,36 @@ export const setupOptionalGroup = function(sheet: PavillonSheet, key: string, ma
   }, rowVisibilities)
 }
 
+export const setupChoiceGroup = function(sheet: PavillonSheet, key: string, maxSlots: number) {
+    const rowVisibilities: Signal<boolean>[] = []
+    for(let i=1; i<=maxSlots; i++) {
+        const rowVisible = setupChoiceRow(sheet, key, i)
+        rowVisibilities.push(rowVisible)
+    }
+
+    sheet.find("add_" + key).on("click", function() {
+        for(let i=1; i<=maxSlots; i++) {
+            if(!sheet.find(key + "_" + i + "_val").visible()) {
+                sheet.find(key + "_" + i + "_choice").show()
+                rowVisibilities[i-1].set(true)
+                break
+            }
+        }
+    })
+    computed(function() {
+        let slotsLeft = false
+        for(let i=0; i<rowVisibilities.length; i++) {
+            slotsLeft = slotsLeft || !rowVisibilities[i]() 
+        }
+        if(slotsLeft) {
+            sheet.find("add_" + key).show()
+        } else {
+            sheet.find("add_" + key).hide()
+        }
+  }, rowVisibilities)
+}
+
+
 const setupOptionalRow = function(sheet: PavillonSheet, key: string, num: number) {
 
     const row = key + "_" + num 
@@ -78,10 +107,14 @@ const setupOptionalRow = function(sheet: PavillonSheet, key: string, num: number
             sheet.find(row + "_label").show()
             sheet.find(row + "_edit").show()
             sheet.find(row + "_val").show()
+            sheet.find(row + "_xp").show()
+            sheet.find(row + "_pratique").show()
         } else {
             sheet.find(row + "_label").hide()
             sheet.find(row + "_edit").hide()
             sheet.find(row + "_val").hide()
+            sheet.find(row + "_xp").hide()
+            sheet.find(row + "_pratique").hide()
         }
         rowVisible.set(sheet.find(row + "_label").visible())
     }, [optinalValue])
@@ -102,30 +135,62 @@ const setupOptionalRow = function(sheet: PavillonSheet, key: string, num: number
     return rowVisible
 }
 
-export const refreshReputationPoints = function(sheet: PavillonSheet, typeRep: "glo" | "inf") {
-    sheet.find("refresh_" + typeRep).on("click", function() {
-        for(let i=1;i<=10;i++) {
-            sheet.find(typeRep + "_" + i).value(false)
+const setupChoiceRow = function(sheet: PavillonSheet, key: string, num: number) {
+
+    const row = key + "_" + num 
+    const optinalChoice = signal(sheet.find(row + "_choice").value())
+    const optinalValue = signal(sheet.find(row + "_input").value())
+    const rowVisible = signal(sheet.find(row + "_label").visible())
+
+    log(optinalChoice())
+
+    computed(function() {
+        if(optinalValue() !== "") {
+            sheet.find(row + "_label").show()
+            sheet.find(row + "_edit").show()
+            sheet.find(row + "_val").show()
+            sheet.find(row + "_xp").show()
+            sheet.find(row + "_pratique").show()
+        } else {
+            sheet.find(row + "_label").hide()
+            sheet.find(row + "_edit").hide()
+            sheet.find(row + "_val").hide()
+            sheet.find(row + "_xp").hide()
+            sheet.find(row + "_pratique").hide()
         }
+        sheet.find(row + "_label").value(optinalValue())
+        rowVisible.set(sheet.find(row + "_label").visible())
+    }, [optinalValue])
+
+    sheet.find(row + "_edit").on("click", function(cmp) {
+        sheet.find(row + "_label").hide()
+        sheet.find(row + "_edit").hide()
+        sheet.find(row + "_choice").show()
     })
+
+    sheet.find(row + "_input").on("update", function(cmp) {
+        sheet.find(row + "_choice").hide()
+        sheet.find(row + "_label").show()
+        sheet.find(row +  "_edit").show()
+        optinalValue.set(cmp.value())
+    })
+
+    sheet.find(row + "_choice").on("update", function(cmp) {
+        sheet.find(row + "_input").value(cmp.text())
+    })
+
+    return rowVisible
 }
 
 export const setupDisplayedReputationPoints = function(sheet: PavillonSheet, typeRep: "glo" | "inf") {
     computed(function() {
         const reputation = sheet.reputation[typeRep]()
-        let something = false
         for(let i=1;i<=10; i++) {
             if(reputation >= i) {
-                something = true
                 sheet.find(typeRep + "_" + i).show()
             } else {
                 sheet.find(typeRep + "_" + i).hide()
             }
-        }
-        if(something) {
-            sheet.find(typeRep + "_bonus_points").show()
-        } else {
-            sheet.find(typeRep + "_bonus_points").hide()
         }
     }, [sheet.reputation[typeRep]])
 }

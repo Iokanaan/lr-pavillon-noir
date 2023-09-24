@@ -95,10 +95,49 @@ declare global {
         name: string
     }
 
+    type CompetenceCombatEntity = {
+        id: string,
+        name: string
+    }
+
     type TypeArme = "cac" | "feu" | "jet" | "trait"
     type AttributEnum = "ADR" | "ADA" | "RES" | "FOR" | "ERU" | "PER" | "EXP" | "CHA" | "POU"
     type Modificateur = "MDFor" | "MDAdr"
     type LongueurArme = "courte" | "longue" | "tres_longue"
+
+    type WeaponEntity = {
+        id: string,
+        attr: Attribut,
+        type: TypeArme,
+        modif_eff: string,
+        modif_fac: string,
+        portee: string,
+        degats: string,
+        recharge: string,
+        comp: string,
+        modif_degats: Modificateur,
+        mains: string,
+        taille: LongueurArme,
+        name: string,
+        notes: string
+    }
+
+    type Weapon = {
+        id: string,
+        attr: Attribut,
+        type: TypeArme,
+        modif_eff: number,
+        modif_fac: number,
+        portee: number,
+        degats: number,
+        recharge: string,
+        comp: string,
+        modif_degats: Modificateur,
+        mains: number,
+        taille: LongueurArme,
+        name: string,
+        notes: string
+    }
 
     type WeaponData = {
         type_arme_choice: TypeArme,
@@ -116,7 +155,25 @@ declare global {
         degats_input: number,
         notes_input: string,
         has_modificateur_degats: boolean,
-        type_arme_int: 1 | 2 | 3 | 4
+        type_arme_int: 1 | 2 | 3 | 4,
+        competence_arme_choice: string
+    }
+
+    type SequelleEntity = {
+        min: string,
+        max: string,
+        short_description: string,
+        description: string,
+        effect: string,
+    }
+
+    type Sequelle = {
+        min: number,
+        max: number,
+        short_description: string,
+        description: string,
+        effect: string,
+        localisation?: string
     }
 } 
 

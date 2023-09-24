@@ -195,14 +195,6 @@ export const setupDisplayedBlessures = function(sheet: PavillonSheet) {
         ])
     })
     const niveauGeneralBlessure = computed(function() {
-        const blessuresByLoc = {
-            "tete": maxBlessuresRecord['tete'](),
-            "torse": maxBlessuresRecord['torse'](),
-            "bd": maxBlessuresRecord['bd'](),
-            "bg": maxBlessuresRecord['bg'](),
-            "jg": maxBlessuresRecord['jg'](),
-            "jd": maxBlessuresRecord['jd'](),
-        }
         const blessuresByLevel = {
             aucune:0,
             legere:0,
@@ -212,8 +204,8 @@ export const setupDisplayedBlessures = function(sheet: PavillonSheet) {
             coma:0,
             mort:0
         }
-        each(blessuresByLoc, function(blessure, localisation) {
-            blessuresByLevel[blessure]++
+        each(maxBlessuresRecord, function(blessure) {
+            blessuresByLevel[blessure()]++
         })
         if(blessuresByLevel.mort>0 || blessuresByLevel.coma > 1) {
             return "mort"
@@ -246,27 +238,41 @@ export const setupDisplayedBlessures = function(sheet: PavillonSheet) {
     computed(function() {
         switch(niveauGeneralBlessure()) {
             case "mort":
-                sheet.find("etat_general_label").value("Mort")
+                sheet.find("etat_general_label").value(_("Mort"))
                 break
             case "coma":
-                sheet.find("etat_general_label").value("Coma")
+                sheet.find("etat_general_label").value(_("Coma"))
                 break
             case "critique":
-                sheet.find("etat_general_label").value("Critique")
+                sheet.find("etat_general_label").value(_("Blessure critique"))
                 break
             case "grave":
-                sheet.find("etat_general_label").value("Grave")
+                sheet.find("etat_general_label").value(_("Gravement blessé"))
                 break
             case "serieuse":
-                sheet.find("etat_general_label").value("Sérieux")
+                sheet.find("etat_general_label").value(_("Sérieusement blessé"))
                 break
             case "legere":
-                sheet.find("etat_general_label").value("Léger")
+                sheet.find("etat_general_label").value(_("Légèrement blessé"))
                 break
             case "aucune":
             default:
-                sheet.find("etat_general_label").value("Intact")
+                sheet.find("etat_general_label").value(_("Indemne"))
         }
     }, [niveauGeneralBlessure])
     
 }
+
+export const setupSequelles = function(sheet: PavillonSheet) {
+    sheet.find('sequelles_tete_row_1').hide()
+    sheet.find('sequelles_tete_row_2').hide()
+    sheet.find('sequelles_tete_title').on('click', function() {
+        if(sheet.find('sequelles_tete_row_1').visible()) {
+            sheet.find('sequelles_tete_row_1').hide()
+            sheet.find('sequelles_tete_row_2').hide()
+        } else {
+            sheet.find('sequelles_tete_row_1').show()
+            sheet.find('sequelles_tete_row_2').show()
+        }
+    })
+} 

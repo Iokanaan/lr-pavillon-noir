@@ -1,11 +1,13 @@
 import { pavillonSheet } from "./pavillonSheet"
-import { refreshReputationPoints, setupDisplayedReputationPoints, setupOptionalGroup, setupRollSelection } from "./competences/competences"
+import { setupChoiceGroup, setupDisplayedReputationPoints, setupOptionalGroup, setupRollSelection } from "./competences/competences"
 import { setupAttribut, setupValeurMetier } from "./attributs/attributs"
 import { setupAvantageEditEntry, setupFaiblesseEditEntry, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupTitre } from "./bio/bio"
 import { reputationListener } from "./reputation/reputation"
 import { setupRepeater } from "./utils/repeaters"
-import { setupDisplayedBlessures } from "./combat/blessures"
-import { setupWeaponEditEntry } from "./combat/armes"
+import { setupDisplayedBlessures, setupSequelles } from "./combat/blessures"
+import { setupWeaponEditEntry, setupWeaponViewEntry } from "./combat/armes"
+import { optionalCompSlots } from "./globals"
+import { getSequelleData, rollResultHandler } from "./roll/rollHandler"
 
 
 init = function(sheet) {
@@ -16,24 +18,20 @@ init = function(sheet) {
         })
         setupValeurMetier(pSheet)
         setupRollSelection(pSheet)
-        const optionalCompSlots: Record<string, number> = {
-            "religion": 2,
-            "conn_specialisee": 2,
-            "art": 2,
-            "artisanat": 2,
-            "connaissances_colons_indigenes": 3,
-            "connaissances_marins": 3,
-            "langue_etrangere": 3
-        }
+
         each(optionalCompSlots, function(val, key) {
-            setupOptionalGroup(pSheet, key, val)
+            log(key)
+            if(key === "armes_blanches" || key === "armes_trait") {
+                setupChoiceGroup(pSheet, key, val)
+            } else {
+                setupOptionalGroup(pSheet, key, val)
+            }
+
         })
         reputationListener(pSheet, "inf")
         reputationListener(pSheet, "glo")
         setupDisplayedReputationPoints(pSheet, "glo")
         setupDisplayedReputationPoints(pSheet, "inf")
-        refreshReputationPoints(pSheet, "glo")
-        refreshReputationPoints(pSheet, "inf")
         setupTitre(pSheet)
         setupProfession(pSheet, "profession", 2)
         setupProfession(pSheet, "poste_bord", 1)
@@ -44,8 +42,24 @@ init = function(sheet) {
         setupRepeater(pSheet, "avantage_repeater", setupAvantageEditEntry, null, null)
         setupRepeater(pSheet, "faiblesse_repeater", setupFaiblesseEditEntry, null, null)
         setupDisplayedBlessures(pSheet)
-        setupRepeater(pSheet, "weapon_repeater", setupWeaponEditEntry, null, null)
+        setupSequelles(pSheet)
+        setupRepeater(pSheet, "weapon_repeater", setupWeaponEditEntry, setupWeaponViewEntry, null)
     }  
+}
+
+initRoll = rollResultHandler
+
+dropDice = function(result, to) {
+    log("drop dice")
+    const tags = result.total !== undefined ? result.tags : result._raw._tags
+    const total = result.total !== undefined ? result.total : result._raw._raw.total 
+    if(tags.indexOf('sequelle') !== -1) {
+        log('containss')
+        const sequelle = getSequelleData(total, tags)
+        const allSequelles = to.get("sequelles_repeater").value() 
+        allSequelles[Math.random().toString().slice(2).substring(0, 10)] = sequelle
+        to.setData({"sequelles_repeater": allSequelles})
+    }
 }
 
 getCriticalHits = function(result) {
