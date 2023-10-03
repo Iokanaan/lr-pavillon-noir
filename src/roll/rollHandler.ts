@@ -1,10 +1,14 @@
+import { wordToInt } from "../utils/utils"
+
 export const rollResultHandler = function(result: DiceResult, callback: DiceResultCallback) {
     callback('DiceResult', function(sheet: Sheet<unknown>) {
         if(result.containsTag("attack")) {
             const res = result.children[0]
-            log(result.children[0].children[0].total)
-            log(result.children[0].children[1].total)
             sheet.get("result").text(res.children[0].total.toString() + " succès")
+            const damage = parseIntTag(result.tags, /^damage_/)
+            if(damage !== undefined) {
+                sheet.get("degats").text((damage < 0 ? damage.toString() : "+" + damage.toString()) + " dégât(s)")
+            }
             sheet.get("localisation").text(Tables.get("localisations").get(res.children[1].total.toString()).name)
         } else if(result.containsTag("sequelle")) {
             handleSequelle(sheet, result)
@@ -69,4 +73,13 @@ export const getSequelleData = function(total: number, tags: string[]) {
     }
     log("Sequelle not found")
     return undefined
+}
+
+const parseIntTag = function(tags: string[], regex: RegExp): number | undefined {
+    const res = tags.filter(function(e) { return regex.test(e) })
+    if(res.length !== 0) {
+        return wordToInt(res[0].split('_')[1])
+    } else {
+        return undefined
+    }
 }

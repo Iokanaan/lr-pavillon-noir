@@ -29,6 +29,8 @@ declare global {
         professions: Signal<Profession | undefined>[],
         posteBord: Signal<Profession | undefined>,
         attr: Record<string, Signal<number>>
+        modifiers: Record<Modificateur, Computed<number>>
+        comp: Record<string, Signal<number>>
         reputation: Record<"glo" | "inf", Computed<number>>
     } & ExtendedSheet<CharData>
 

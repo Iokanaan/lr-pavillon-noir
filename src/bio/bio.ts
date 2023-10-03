@@ -1,6 +1,7 @@
-import { computed, signal } from "../utils/utils"
+import { effect, signal } from "../utils/utils"
 
 export const setupAvantageEditEntry = function(entry: Component<Avantage>) {
+
     if(entry.find("avantage_choice").value() === undefined) {
         entry.find("avantage_choice").value("animal_compagnie")
     }
@@ -46,14 +47,23 @@ export const setupFaiblesseEditEntry = function(entry: Component<Avantage>) {
 export const setupTitre = function(sheet: PavillonSheet) {
     const titre = signal(sheet.find("titre_input").value())
     sheet.find("add_titre").on("click", function() {
-        sheet.find("titre_label").hide()
-        sheet.find("no_titre").hide()
-        sheet.find("titre_input").show()
+        if(sheet.find("titre_label").visible() || sheet.find("no_titre").visible()) {
+            sheet.find("titre_label").hide()
+            sheet.find("no_titre").hide()
+            sheet.find("titre_input").show()
+        } else {
+            if(sheet.find("titre_label").value() !== "") {
+                sheet.find("titre_label").show()
+            } else {
+                sheet.find("no_titre").show()
+            }
+            sheet.find("titre_input").hide()
+        }
     })
     sheet.find("titre_input").on("update", function(cmp) {
         titre.set(cmp.value())
     })
-    computed(function() {
+    effect(function() {
         if(titre() === "") {
             sheet.find("titre_label").hide()
             sheet.find("no_titre").show()
@@ -64,6 +74,78 @@ export const setupTitre = function(sheet: PavillonSheet) {
             sheet.find("titre_input").hide()
         }
     }, [titre])
+}
+
+export const setupAge = function(sheet: PavillonSheet) {
+    sheet.find("age_title").on("click", function() {
+        if(sheet.find("age_label").visible()) {
+            sheet.find("age_label").hide()
+            sheet.find("age_input").show()
+        } else {
+            sheet.find("age_label").show()
+            sheet.find("age_input").hide()
+        }
+    })
+
+    sheet.find("age_input").on("update", function(cmp) {
+        sheet.find("age_label").value(cmp.value() + _(" ans"))
+        sheet.find("age_label").show()
+        sheet.find("age_input").hide()
+    })
+}
+
+export const setupPoids = function(sheet: PavillonSheet) {
+    sheet.find("poids_title").on("click", function() {
+        if(sheet.find("poids_label").visible()) {
+            sheet.find("poids_label").hide()
+            sheet.find("poids_input").show()
+        } else {
+            sheet.find("poids_label").show()
+            sheet.find("poids_input").hide()
+        }
+    })
+
+    sheet.find("poids_input").on("update", function(cmp) {
+        sheet.find("poids_label").value(cmp.value() + _(" kg"))
+        sheet.find("poids_label").show()
+        sheet.find("poids_input").hide()
+    })
+}
+
+export const setupReligion = function(sheet: PavillonSheet) {
+    sheet.find("religion_title").on("click", function() {
+        if(sheet.find("religion_label").visible()) {
+            sheet.find("religion_label").hide()
+            sheet.find("religion_input").show()
+        } else {
+            sheet.find("religion_label").show()
+            sheet.find("religion_input").hide()
+        }
+    })
+
+    sheet.find("religion_input").on("update", function(cmp) {
+        sheet.find("religion_label").value(cmp.value())
+        sheet.find("religion_label").show()
+        sheet.find("religion_input").hide()
+    })
+}
+
+export const setupTaille = function(sheet: PavillonSheet) {
+    sheet.find("taille_title").on("click", function() {
+        if(sheet.find("taille_label").visible()) {
+            sheet.find("taille_label").hide()
+            sheet.find("taille_input").show()
+        } else {
+            sheet.find("taille_label").show()
+            sheet.find("taille_input").hide()
+        }
+    })
+
+    sheet.find("taille_input").on("update", function(cmp) {
+        sheet.find("taille_label").value(cmp.value() + _(" cm"))
+        sheet.find("taille_label").show()
+        sheet.find("taille_input").hide()
+    })
 }
 
 export const setupOrigine = function(sheet: PavillonSheet) {
@@ -154,7 +236,7 @@ export const setupPeuple = function(sheet: PavillonSheet) {
     sheet.find("peuple_groupe_input").on("update", function(cmp) {
         groupe.set(cmp.value())
     })
-    computed(function() {
+    effect(function() {
         if(groupe() !== "") {
             sheet.find("peuple_label").value(peuple() + ' (' + groupe() + ')')
         } else {
@@ -222,7 +304,7 @@ export const setupProfession = function(sheet: PavillonSheet, typeMetier: "profe
         }
     })
 
-    computed(function() {
+    effect(function() {
         let noMetier = true
         for(let i=0; i<qte; i++) {
             noMetier = noMetier && (metierSignals[i]() === undefined) 
@@ -245,7 +327,7 @@ const setupSingleProfession = function(sheet: PavillonSheet, professionByType: R
         sheet.find(typeMetier + "_choice_" + num).value(Object.keys(professionChoices)[0])
     });
 
-    computed(function() {
+    effect(function() {
         switch(mode()) {
             case "EDIT":
                 sheet.find("no_" + typeMetier).hide()
@@ -322,7 +404,7 @@ const setupSingleProfession = function(sheet: PavillonSheet, professionByType: R
         })
     }
 
-    computed(function() {
+    effect(function() {
         const profession = metierSignals[num - 1]()
         if(profession !== undefined) {
             sheet.find(typeMetier + "_label_" + num).value(profession.name)

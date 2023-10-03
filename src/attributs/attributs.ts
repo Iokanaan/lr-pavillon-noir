@@ -1,4 +1,4 @@
-import { computed, signal } from "../utils/utils"
+import { effect, resetModifiers, setVirtualBg } from "../utils/utils"
 
 export const setupAttribut = function(sheet: PavillonSheet, attr: Attribut) {
     sheet.find(attr.id + "_label").on("click", function(cmp) {
@@ -9,8 +9,22 @@ export const setupAttribut = function(sheet: PavillonSheet, attr: Attribut) {
         } else {
             handleAttrRoll(sheet, cmp.text(), target)
         }
+        resetModifiers(sheet)
     })
-    sheet.attr[attr.id] = signal(sheet.find(attr.id + "_val").value() as number);
+
+    sheet.find(attr.id + "_plus").on("click", function() {
+        const attrCmp = sheet.find(attr.id + "_val") as Component<number>
+        attrCmp.virtualValue(attrCmp.value() + 1)
+        setVirtualBg(attrCmp)
+    })
+    sheet.find(attr.id + "_minus").on("click", function() {
+        const attrCmp = sheet.find(attr.id + "_val") as Component<number>
+        if(attrCmp.value() > 0) {
+            attrCmp.virtualValue(attrCmp.value() - 1)
+            setVirtualBg(attrCmp)
+        }
+    })
+    sheet.attr[attr.id].set(sheet.find(attr.id + "_val").value() as number);
     (sheet.find(attr.id + "_val") as Component<number>).on("update", function(cmp) {
         sheet.attr[attr.id].set(cmp.value())
     })
@@ -40,7 +54,7 @@ const handleAttrRoll = function(sheet: PavillonSheet, title: string, target: num
 }
 
 export const setupValeurMetier = function(sheet: PavillonSheet) {
-    computed(function() {
+    effect(function() {
         for(let i=0;i<2;i++) {
             const profession = sheet.professions[i]()
             if(profession !== undefined) {

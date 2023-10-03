@@ -1,37 +1,43 @@
 import { pavillonSheet } from "./pavillonSheet"
-import { setupChoiceGroup, setupDisplayedReputationPoints, setupOptionalGroup, setupRollSelection } from "./competences/competences"
+import { setupChoiceGroup, setupComps, setupDisplayedReputationPoints, setupOptionalGroup } from "./competences/competences"
 import { setupAttribut, setupValeurMetier } from "./attributs/attributs"
-import { setupAvantageEditEntry, setupFaiblesseEditEntry, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupTitre } from "./bio/bio"
+import { setupAge, setupAvantageEditEntry, setupFaiblesseEditEntry, setupJeunesse, setupOrigine, setupPeuple, setupPoids, setupProfession, setupReligion, setupTaille, setupTitre } from "./bio/bio"
 import { reputationListener } from "./reputation/reputation"
 import { setupRepeater } from "./utils/repeaters"
 import { setupDisplayedBlessures, setupSequelles } from "./combat/blessures"
 import { setupWeaponEditEntry, setupWeaponViewEntry } from "./combat/armes"
-import { optionalCompSlots } from "./globals"
+import { globalSheets, optionalCompSlots } from "./globals"
 import { getSequelleData, rollResultHandler } from "./roll/rollHandler"
 
 
 init = function(sheet) {
     if(sheet.id() === "main") {
+        
         const pSheet = pavillonSheet(sheet)
+        globalSheets[sheet.getSheetId()] = pSheet
         Tables.get("attributs").each(function(attr: AttributEntity) {
             setupAttribut(pSheet, attr)
         })
         setupValeurMetier(pSheet)
-        setupRollSelection(pSheet)
+        setupComps(pSheet)
 
         each(optionalCompSlots, function(val, key) {
-            log(key)
-            if(key === "armes_blanches" || key === "armes_trait") {
+            if(key === "arme_blanche" || key === "arme_trait") {
                 setupChoiceGroup(pSheet, key, val)
             } else {
                 setupOptionalGroup(pSheet, key, val)
             }
 
         })
+        pSheet.find("character_name").text(sheet.properName())
         reputationListener(pSheet, "inf")
         reputationListener(pSheet, "glo")
         setupDisplayedReputationPoints(pSheet, "glo")
         setupDisplayedReputationPoints(pSheet, "inf")
+        setupTaille(pSheet)
+        setupPoids(pSheet)
+        setupAge(pSheet)
+        setupReligion(pSheet)
         setupTitre(pSheet)
         setupProfession(pSheet, "profession", 2)
         setupProfession(pSheet, "poste_bord", 1)
@@ -50,11 +56,9 @@ init = function(sheet) {
 initRoll = rollResultHandler
 
 dropDice = function(result, to) {
-    log("drop dice")
     const tags = result.total !== undefined ? result.tags : result._raw._tags
     const total = result.total !== undefined ? result.total : result._raw._raw.total 
     if(tags.indexOf('sequelle') !== -1) {
-        log('containss')
         const sequelle = getSequelleData(total, tags)
         const allSequelles = to.get("sequelles_repeater").value() 
         allSequelles[Math.random().toString().slice(2).substring(0, 10)] = sequelle

@@ -1,7 +1,7 @@
-import { computed, signal } from "../utils/utils"
+import { computed, effect, signal } from "../utils/utils"
 
 export const setupDisplayedBlessures = function(sheet: PavillonSheet) {
-    computed(function() {
+    effect(function() {
         const localisations = ["tete","torse","bd","bg","jd","jg"]
         const res = sheet.attr['RES']()
         for(let loc=0;loc<localisations.length;loc++) {
@@ -235,7 +235,7 @@ export const setupDisplayedBlessures = function(sheet: PavillonSheet) {
         maxBlessuresRecord['jd']
     ])
 
-    computed(function() {
+    effect(function() {
         switch(niveauGeneralBlessure()) {
             case "mort":
                 sheet.find("etat_general_label").value(_("Mort"))

@@ -67,6 +67,9 @@ declare global {
         text(txt: string)
         sheet(): Sheet<unknown>
         visible(): boolean
+        virtualValue(): T
+        virtualValue(val: T)
+        rawValue(): T
     }
     
     interface ChoiceComponent<T = unknown> extends Component<T> {

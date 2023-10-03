@@ -9,6 +9,15 @@ export const optionalCompSlots: Record<string, number> = {
     "connaissances_colons_indigenes": 3,
     "connaissances_marins": 3,
     "langue_etrangere": 3,
-    "armes_blanches": 4,
-    "armes_trait": 2
+    "arme_blanche": 4,
+    "arme_trait": 2
 }
+
+export const typesComp = [
+    "comp_maritimes", 
+    "comp_connaissances", 
+    "comp_techniques", 
+    "comp_physiques", 
+    "comp_sociales",
+    "comp_combat"
+]

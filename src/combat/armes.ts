@@ -1,5 +1,5 @@
-import { optionalCompSlots } from "../globals"
-import { computed, signal } from "../utils/utils"
+import { globalSheets, optionalCompSlots } from "../globals"
+import { computed, effect, intToWord, signal } from "../utils/utils"
 
 const mapWeaponEntity = function(e: WeaponEntity): Weapon {
     return {
@@ -28,49 +28,160 @@ const compArmeToChoices = function(comptences: Table<CompetenceCombatEntity>) {
     return choices
 }
 
+const setVirtualColor = function(cmp: Component<string>, refValue: number) {
+    if(parseInt(cmp.value()) > refValue) {
+        cmp.addClass("text-success")
+        cmp.removeClass("text-danger")
+    } else if(parseInt(cmp.value()) < refValue) {
+        cmp.removeClass("text-success")
+        cmp.addClass("text-danger")       
+    } else {
+        cmp.removeClass("text-success")
+        cmp.removeClass("text-danger")
+    }
+}
+
 export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
-    entry.find("weapon_title").on("click", function(cmp) {
-        let nDice = 0
+    const sheet = globalSheets[entry.sheet().getSheetId()]
+        
+    const attrModifier = signal(0)
+    const virtualAttr = computed(function() {
+        const virtualVal = sheet.attr[entry.value().attr_arme_choice]() + attrModifier() + entry.value().modif_fac_input
+        entry.find("roll_formula_attr").value(virtualVal)
+        setVirtualColor(entry.find("roll_formula_attr"), sheet.attr[entry.value().attr_arme_choice]() + entry.value().modif_fac_input)
+        return virtualVal
+    }, [sheet.attr[entry.value().attr_arme_choice], attrModifier])
+
+    const compModifier = signal(0)
+    const virtualComp = computed(function() {
+        let compVal = 0
+        let compId = undefined
         switch(entry.value().type_arme_choice) {
             case "feu":
-                nDice = entry.sheet().get(entry.value().competence_arme_choice + "_val").value()
+                compVal = sheet.comp[entry.value().competence_arme_choice]()
                 break
             case "cac":
-                nDice = fetchDice(entry.sheet(), entry.value().competence_arme_choice, "armes_blanches")
+                compId = getCompComponent(sheet, entry.value().competence_arme_choice, "arme_blanche") 
+                if(compId !== undefined) {
+                    compVal = sheet.comp[compId]()
+                }
                 break
             case "jet":
             case "trait":
-                nDice = fetchDice(entry.sheet(), entry.value().competence_arme_choice, "armes_trait")
+                compId = getCompComponent(sheet, entry.value().competence_arme_choice, "arme_trait") 
+                if(compId !== undefined) {
+                    compVal = sheet.comp[compId]()
+                }
                 break
         }
+        log(compVal)
+        const virtualVal = compVal + compModifier() + entry.value().modif_eff_input
+        entry.find("roll_formula_comp").value(virtualVal)
+        setVirtualColor(entry.find("roll_formula_comp"), compVal + entry.value().modif_eff_input)
+        return virtualVal
+    }, [
+        sheet.comp["arme_blanche_1"],
+        sheet.comp["arme_blanche_2"],
+        sheet.comp["arme_blanche_3"],
+        sheet.comp["arme_blanche_4"],
+        sheet.comp["arme_trait_1"],
+        sheet.comp["arme_trait_2"],
+        sheet.comp["mousquet"],
+        sheet.comp["pistolet"],
+        sheet.comp["grenade"],
+        compModifier
+    ])
+
+    const damageModifier = signal(0)
+    log("setyp deatag")
+    const virtualDamage = computed(function() {
+        let bonus = 0
+        if(entry.value().has_modificateur_degats && entry.value().modif_degats_choice !== "0") {
+            bonus += sheet.modifiers[entry.value().modif_degats_choice as Modificateur]()
+        }
+        const virtualVal = entry.value().degats_input + bonus + damageModifier() 
+        entry.find("roll_degats").value(virtualVal)
+        setVirtualColor(entry.find("roll_degats"), entry.value().degats_input + bonus)
+        return virtualVal
+    },[sheet.modifiers["MDFor"], sheet.modifiers["MDAdr"], damageModifier])
+
+    entry.find("eff_plus").on("click", function() {
+        compModifier.set(compModifier() + 1)
+    })
+
+    entry.find("eff_minus").on("click", function() {
+        compModifier.set(compModifier() - 1)
+    })
+
+    entry.find("fac_plus").on("click", function() {
+        attrModifier.set(attrModifier() + 1)
+    })
+
+    entry.find("fac_minus").on("click", function() {
+        attrModifier.set(attrModifier() - 1)
+    })
+
+    entry.find("degats_plus").on("click", function() {
+        damageModifier.set(damageModifier() + 1)
+    })
+
+    entry.find("degats_minus").on("click", function() {
+        damageModifier.set(damageModifier() - 1)
+    })
+
+    entry.find("eff_plus").hide()
+    entry.find("eff_minus").hide()
+    entry.find("fac_plus").hide()
+    entry.find("fac_minus").hide()
+    entry.find("degats_plus").hide()
+    entry.find("degats_minus").hide()
+
+    entry.find("edit_attack").on("click", function() {
+        if(entry.find("eff_plus").visible()) {
+            entry.find("eff_plus").hide()
+            entry.find("eff_minus").hide()
+            entry.find("fac_plus").hide()
+            entry.find("fac_minus").hide()
+            entry.find("degats_plus").hide()
+            entry.find("degats_minus").hide()
+            attrModifier.set(0)
+            compModifier.set(0)
+            damageModifier.set(0)
+        } else {
+            entry.find("eff_plus").show()
+            entry.find("eff_minus").show()
+            entry.find("fac_plus").show()
+            entry.find("fac_minus").show()
+            entry.find("degats_plus").show()
+            entry.find("degats_minus").show()
+        }            
+    })
+
+    entry.find("weapon_title").on("click", function(cmp) {
         let expression = ""
-        nDice += entry.value().modif_eff_input
-        if(nDice !== 0) {
-            expression += nDice + "d10 "
+        if(virtualComp() !== 0) {
+        expression += virtualComp() + "d10 "
         } else {
             expression += "1d12 "
         }
-        expression += "<={1:2} " + (entry.sheet().get(entry.value().attr_arme_choice + "_val").value() + entry.value().modif_fac_input)
+        expression += "<={1:2} " + virtualAttr()
         expression = "(" + expression + ")"
         expression += " + 1d6[localisation]"
-        expression = "(" + expression + ")[attack]"
+        expression = "(" + expression + ")[attack," + "damage_" + intToWord(virtualDamage()) + "]"
         log(expression)
         new RollBuilder(entry.sheet()).title(cmp.text()).expression(expression).roll()
     })
 }
 
-const fetchDice = function(sheet: Sheet, comp: string, category: "armes_blanches" | "armes_trait"): number {
-
+const getCompComponent = function(sheet: PavillonSheet, comp: string, category: "arme_blanche" | "arme_trait"): string | undefined {
+    log(category)
     for(let i=1; i<=optionalCompSlots[category];i++) {
-        log("look for " + comp + " === " + sheet.get(category + "_" + i + "_choice").value())
-        log(comp  == sheet.get(category + "_" + i + "_choice").value())
-        log(comp  === sheet.get(category + "_" + i + "_choice").value())
-        if(sheet.get(category + "_" + i + "_choice").value() === comp) {
-            log("retirng")
-            return sheet.get(category + "_" + i + "_val").value()
+        log(sheet.find(category + "_" + i + "_choice").value())
+        if(sheet.find(category + "_" + i + "_choice").value() === comp) {
+            return category + "_" + i
         }
     }
-    return 0
+    return undefined
 }
 
 export const setupWeaponEditEntry = function(entry: Component<WeaponData>) {
@@ -109,7 +220,7 @@ export const setupWeaponEditEntry = function(entry: Component<WeaponData>) {
     }
 
     const typeArme = signal(entry.find("type_arme_choice").value() as TypeArme)
-    computed(function() {
+    effect(function() {
         let choices = undefined;
         if(typeArme() === "cac") {
             entry.find("longueur_arme_choice").show()
@@ -160,13 +271,12 @@ export const setupWeaponEditEntry = function(entry: Component<WeaponData>) {
     }, [typeArme])
 
     const degatChoice = signal(entry.find("modif_degats_choice").value() as "0" | Modificateur)
-    computed(function() {
+    effect(function() {
         entry.find("has_modificateur_degats").value(degatChoice() !== "0")
     }, [degatChoice])
 
     const longueurArme = signal(entry.find("longueur_arme_choice").text())
-    computed(function() {
-        log(longueurArme())
+    effect(function() {
         entry.find("longueur_arme_input").value(longueurArme())
     }, [longueurArme])
 
