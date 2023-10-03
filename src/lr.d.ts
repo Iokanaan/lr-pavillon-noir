@@ -20,21 +20,21 @@ declare global {
     declare var drop: (from: Sheet<any>, to: Sheet<any>) => void
     declare var initRoll: (result: DiceResult, callback: DiceResultCallback) => void
     declare const wait: (ms: number, callback: () => void) => void
-    declare var getCriticalHits: (result: DiceResult) => void
+    declare var getCriticalHits: (result: DiceResult) => Record<string, Record<string, number[]>>
     declare const log: (s: any) => void;
     declare const each: <T>(c: Record<string, T>, f: (i: T, eid: string) => void) => void;
     declare var getBarAttributes: (sheet: Sheet<any>) => Record<string, [string, string | number]> | void;
-    
+    declare var dropDice: (result: DiceResult, to: Sheet) => void;
+
     declare const Tables: Tables;
     interface Tables {
-        get(elem: 'skills_basic'): Table<SkillBasicEntity>
-        get(elem: 'races'): Table<Race>
-        get(elem: 'competences_av'): Table<SkillAvEntity>
-        get(elem: 'carriere'): Table<Carriere>
-        get(elem: 'talents'): Table<Talent>
-        get(elem: 'groupe_armes'): Table<GroupeArme>
-        get(elem: 'magies_communes' | 'domaines_occultes' | 'sombres_savoirs' | 'domaines_divins'): Table<DomaineMagie>
-        get(elem: 'magie_mineure'): Table<Spell>
+        get(elem: 'attributs'): Table<AttributEntity>
+        get(elem: 'comp_maritimes' | 'comp_connaissances' | 'comp_techniques' | 'comp_physiques' | 'comp_sociales' | 'comp_combat'): Table<CompetenceEntity>
+        get(elem: 'professions' | 'postes_bord'): Table<ProfessionEntity>
+        get(elem: 'types_professions' | 'types_postes_bord'): Table<ProfessionTypeEntity>
+        get(elem: 'glo' | 'inf'): Table<ReputationEntity>
+        get(elem: 'armes'): Table<WeaponEntity>
+        get(elem: 'sequelles_tete' | 'sequelles_torse' | 'sequelles_jambe' | 'sequelles_bras'): Table<SequelleEntity>
         get(id: string): Table
     }
     
@@ -67,6 +67,9 @@ declare global {
         text(txt: string)
         sheet(): Sheet<unknown>
         visible(): boolean
+        virtualValue(): T
+        virtualValue(val: T)
+        rawValue(): T
     }
     
     interface ChoiceComponent<T = unknown> extends Component<T> {
@@ -85,6 +88,7 @@ declare global {
     }
     
     type DiceResult = {
+        tags: string[]
         allTags: string[]
         all: DiceResult[]
         containsTag(tag: string): boolean
@@ -93,10 +97,14 @@ declare global {
         title: string
         expression: string,
         total: number,
-        discarded: boolean
+        discarded: boolean,
+        children: DiceResult[]
     }
-    
+
+
     type DiceResultCallback = (e: string, callback: (sheet: Sheet<unknown>) => void) => void;
+
+    declare const _: (s: string) => string
 
 }
 

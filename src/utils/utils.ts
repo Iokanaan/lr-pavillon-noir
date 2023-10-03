@@ -1,3 +1,5 @@
+import { typesComp } from "../globals"
+
 // Conversion d'un entier vers du text pour transmission dans les tags
 export const intToWord = function(n: number) {
     let neg = false
@@ -60,7 +62,7 @@ export function signal<T>(value: T): Signal<T> {
 }
 
 // Implémentation du pattern computed
-export function computed<T>(compute: () => T, dependencies: Signal<unknown>[] | Computed<unknown>[]): Computed<T> {
+export const computed = function<T>(compute: () => T, dependencies: Signal<unknown>[] | Computed<unknown>[]): Computed<T> {
     const s = signal(compute());
     for(let i=0; i<dependencies.length; i++) {
         dependencies[i].subscribe(function(c) {
@@ -71,9 +73,49 @@ export function computed<T>(compute: () => T, dependencies: Signal<unknown>[] | 
     return s;
 }
 
-// Classe utilitaire pour cacher des objets dans les repeaters
-export const hideDescriptions = function(repeater: Component<Record<string, unknown>>, descId: string) {
-    each(repeater.value(), function(_, entryId) {
-        repeater.find(entryId).find(descId).hide()
+export const effect = function(apply: () => void, dependencies: Signal<unknown>[] | Computed<unknown>[]): void {
+    apply()
+    for(let i=0; i<dependencies.length; i++) {
+        dependencies[i].subscribe(function() {
+            apply()
+        })
+    }
+}
+
+export const resetModifiers = function(sheet: PavillonSheet) {
+    Tables.get("attributs").each(function(attr) {
+        const cmp = sheet.find(attr.id + "_val") as Component<number>
+        cmp.virtualValue(cmp.rawValue())
+        setVirtualBg(cmp)
     })
+    typesComp.forEach(function(typeComp) {
+        Tables.get(typeComp).each(function(comp: CompetenceEntity) {
+            const cmp = sheet.find(comp.id + "_val") as Component<number>
+            cmp.virtualValue(cmp.rawValue())
+            setVirtualBg(cmp)
+        })
+    })
+    
+}
+
+export const mapCompetence = function(entity: CompetenceEntity): Competence {
+    return {
+        id: entity.id,
+        name: entity.name,
+        cc: entity.cc === "true",
+        metier: entity.metier === "true"
+    }
+}
+
+export const setVirtualBg = function(cmp: Component<number>) {
+    if(cmp.value() > cmp.rawValue()) {
+        cmp.addClass("bg-success")
+        cmp.removeClass("bg-danger")
+    } else if(cmp.value() < cmp.rawValue()) {
+        cmp.removeClass("bg-success")
+        cmp.addClass("bg-danger")
+    } else {
+        cmp.removeClass("bg-success")
+        cmp.removeClass("bg-danger")
+    }
 }
