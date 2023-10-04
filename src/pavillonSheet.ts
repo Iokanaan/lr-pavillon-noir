@@ -2,7 +2,7 @@ import { computed, intToWord, signal } from "./utils/utils"
 
 export const pavillonSheet = function(sheet: Sheet) {
 
-    const _pSheet = {
+    const _pSheet: PavillonSheet = {
         raw: function() { return sheet },
         find: function(id: string) { return sheet.get(id)},
         stringId: function() { return intToWord(sheet.getSheetId())},
@@ -26,7 +26,15 @@ export const pavillonSheet = function(sheet: Sheet) {
             "glo": signal(0),
             "inf": signal(0)
         }
-    } as any
+    }
+
+    _pSheet.chance = computed(function() {
+        return _pSheet.attr["POU"]() - 5
+    }, [_pSheet.attr["POU"]])
+
+    _pSheet.commandement = {
+
+    }
 
     _pSheet.modifiers = {
         "MDFor": computed(function() {

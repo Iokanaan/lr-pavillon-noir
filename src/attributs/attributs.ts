@@ -69,10 +69,17 @@ export const setupValeurMetier = function(sheet: PavillonSheet) {
                 sheet.find("valeur_metier_val_" + (i+1)).hide()
             }
         }
-
+        const posteBord = sheet.posteBord()
+        if(posteBord !== undefined) {
+            sheet.find("valeur_poste_bord_label_1").value(posteBord.name)
+            sheet.find("valeur_poste_bord_val_1").value(Math.round(
+                (sheet.attr[posteBord.attr_1]() + 
+                sheet.attr[posteBord.attr_2]()) / 2))
+        }
     }, [
         sheet.professions[0], 
         sheet.professions[1], 
+        sheet.posteBord,
         sheet.attr['ADA'], 
         sheet.attr['FOR'], 
         sheet.attr['ADR'], 

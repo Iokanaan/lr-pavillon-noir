@@ -28,10 +28,12 @@ declare global {
         selectedComp: Signal<Competence | undefined>,
         professions: Signal<Profession | undefined>[],
         posteBord: Signal<Profession | undefined>,
+        commandement: Record<string, Computed<number>>
         attr: Record<string, Signal<number>>
         modifiers: Record<Modificateur, Computed<number>>
         comp: Record<string, Signal<number>>
         reputation: Record<"glo" | "inf", Computed<number>>
+        chance: Computed<number>
     } & ExtendedSheet<CharData>
 
     type Competence = {
