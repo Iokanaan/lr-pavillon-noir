@@ -297,24 +297,28 @@ export const setupProfession = function(sheet: PavillonSheet, typeMetier: "profe
 
     sheet.find("add_" + typeMetier).on("click", function() {
         for(let i=0;i<qte;i++) {
-            if(metierSignals[i]() === undefined && modes[i]() === "DISPLAY") {
+            if(metierSignals[i].profession() === undefined && modes[i]() === "DISPLAY") {
                 modes[i].set("EDIT")
                 break
             }
         }
     })
 
+    const dependencies = []
+    for(let i=0; i<qte; i++) {
+        dependencies.push(metierSignals[i].profession)
+    }
     effect(function() {
         let noMetier = true
         for(let i=0; i<qte; i++) {
-            noMetier = noMetier && (metierSignals[i]() === undefined) 
+            noMetier = noMetier && (metierSignals[i].profession() === undefined) 
         }
         if(noMetier) {
             sheet.find("no_" + typeMetier).show()
         } else {
             sheet.find("no_" + typeMetier).hide()
         }
-    }, metierSignals)
+    }, dependencies)
 }
 
 const setupSingleProfession = function(sheet: PavillonSheet, professionByType: Record<string, ProfessionEntity[]>, typeMetier: "profession" |"poste_bord", mode: Signal<"DISPLAY"|"EDIT"|"CUSTOM">, num: number) {
@@ -375,14 +379,14 @@ const setupSingleProfession = function(sheet: PavillonSheet, professionByType: R
     });
 
     sheet.find("remove_" + typeMetier + "_" + num).on("click", function() {
-        metierSignals[num - 1].set(undefined)
+        metierSignals[num - 1].profession.set(undefined)
     })
 
     sheet.find("record_" + typeMetier + "_" + num).on("click", function() {
-        metierSignals[num - 1].set({
+        metierSignals[num - 1].profession.set({
             name: sheet.find(typeMetier + "_input_" + num).value() as string,
-            attr_1: sheet.find("attr_1_" + typeMetier + "_" + num).value() as string,
-            attr_2: sheet.find("attr_2_" + typeMetier + "_" + num).value() as string,
+            attr_1: sheet.find("attr_1_" + typeMetier + "_" + num).value() as AttributEnum,
+            attr_2: sheet.find("attr_2_" + typeMetier + "_" + num).value() as AttributEnum,
         })
         mode.set("DISPLAY")
     })
@@ -396,16 +400,8 @@ const setupSingleProfession = function(sheet: PavillonSheet, professionByType: R
         }
     })
 
-    if(sheet.find(typeMetier + "_input_" + num).value() !== "") {
-        metierSignals[num - 1].set({
-            name: sheet.find(typeMetier + "_input_" + num).value() as string,
-            attr_1: sheet.find("attr_1_" + typeMetier + "_" + num).value() as string,
-            attr_2: sheet.find("attr_2_" + typeMetier + "_" + num).value() as string,
-        })
-    }
-
     effect(function() {
-        const profession = metierSignals[num - 1]()
+        const profession = metierSignals[num - 1].profession()
         if(profession !== undefined) {
             sheet.find(typeMetier + "_label_" + num).value(profession.name)
             sheet.find("remove_" + typeMetier + "_" + num).show()
@@ -414,7 +410,7 @@ const setupSingleProfession = function(sheet: PavillonSheet, professionByType: R
             sheet.find(typeMetier + "_input_" + num).value("")
             sheet.find("remove_" + typeMetier + "_" + num).hide()
         }
-    }, [metierSignals[num - 1]])
+    }, [metierSignals[num - 1].profession])
 
 
 }

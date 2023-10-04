@@ -1,39 +1,75 @@
-import { computed, intToWord, signal } from "./utils/utils"
+import { typesComp } from "./globals"
+import { computed, intToWord, mapCompetence, signal } from "./utils/utils"
 
 export const pavillonSheet = function(sheet: Sheet) {
 
-    const _pSheet: PavillonSheet = {
+    const compSignals: any = {}
+    typesComp.forEach(function(typeComp) {
+        (Tables.get(typeComp) as Table<CompetenceEntity>).each(function(e) {
+            const c = mapCompetence(e)
+            if(!c.optional) {
+                compSignals[c.id] = { 
+                    value: signal(sheet.get(c.id + "_val").value())
+                } 
+            } else {
+                compSignals[c.id] = { 
+                    value: signal(sheet.get(c.id + "_val").value()), 
+                    actualName: signal(sheet.get(c.id + "_label").value())
+                } 
+            }
+        })
+    })
+
+    const attrSignals: any = {}
+    Tables.get("attributs").each(function(a) {
+        attrSignals[a.id] = signal(sheet.get(a.id + "_val").value())
+    })
+
+    const _pSheet: any = {
         raw: function() { return sheet },
         find: function(id: string) { return sheet.get(id)},
         stringId: function() { return intToWord(sheet.getSheetId())},
         entryStates: {},
         selectedComp: signal(undefined),
-        professions: [signal(undefined), signal(undefined)],
-        posteBord: signal(undefined),
-        attr: {
-            'FOR': signal(0),
-            'RES': signal(0),
-            'ADA': signal(0),
-            'ADR': signal(0),
-            'ERU': signal(0),
-            'PER': signal(0),
-            'EXP': signal(0),
-            'CHA': signal(0),
-            'POU': signal(0),
-        },
-        comp: {},
+        attr: attrSignals,
+        comp: compSignals,
         reputation: {
-            "glo": signal(0),
-            "inf": signal(0)
+            glo: signal(sheet.get("glo_points").value()),
+            inf: signal(sheet.get("inf_points").value())
         }
     }
+
+    _pSheet.professions = [buildProfession(_pSheet, sheet, "profession", 1), buildProfession(_pSheet, sheet, "profession", 2)]
+    _pSheet.posteBord = buildProfession(_pSheet, sheet, "poste_bord", 1)
 
     _pSheet.chance = computed(function() {
         return _pSheet.attr["POU"]() - 5
     }, [_pSheet.attr["POU"]])
 
-    _pSheet.commandement = {
+    // Présent pour ajouter des règles éventuelles qui modifierai l'initiative sans toucher à l'adaptabilité
+    _pSheet.initiative = computed(function() {
+        return _pSheet.attr['ADA']()
+    }, [_pSheet.attr['ADA']])
 
+    _pSheet.commandement = {
+        "capitaine": computed(function() {
+            return (_pSheet.attr['CHA']() + _pSheet.attr['ERU']()) / 2
+        }, [_pSheet.attr["CHA"], _pSheet.attr["ERU"]]),
+        "second": computed(function() {
+            return (_pSheet.attr['ADA']() + _pSheet.attr['EXP']()) / 2
+        }, [_pSheet.attr["ADA"], _pSheet.attr["EXP"]]),
+        "canonnier": computed(function() {
+            return (_pSheet.attr['PER']() + _pSheet.attr['EXP']()) / 2
+        }, [_pSheet.attr["PER"], _pSheet.attr["EXP"]]),
+        "quartier_maitre": computed(function() {
+            return (_pSheet.attr['PER']() + _pSheet.attr['CHA']()) / 2
+        }, [_pSheet.attr["PER"], _pSheet.attr["CHA"]]),
+        "maitre_equipage": computed(function() {
+            return (_pSheet.attr['ADR']() + _pSheet.attr['EXP']()) / 2
+        }, [_pSheet.attr["ADR"], _pSheet.attr["EXP"]]),
+        "maitre_canonnier": computed(function() {
+            return (_pSheet.attr['PER']() + _pSheet.attr['FOR']()) / 2
+        }, [_pSheet.attr["PER"], _pSheet.attr["FOR"]])
     }
 
     _pSheet.modifiers = {
@@ -72,4 +108,36 @@ export const pavillonSheet = function(sheet: Sheet) {
     }
     
     return _pSheet as PavillonSheet
+}
+
+const buildProfession = function(_pSheet: {"attr": Record<AttributEnum, Signal<number>>}, sheet: Sheet, professionId: string, num: number): ProfessionHolder {
+    let initialData = undefined
+    if(sheet.get(professionId + "_val_" + num).value() !== "" && sheet.get(professionId + "_val_" + num).value() !== undefined) {
+        initialData = {
+            name: sheet.get(professionId + "_val_" + num).value(),
+            attr_1: sheet.get("attr_1_" + professionId + "_" + num).value(),
+            attr_2: sheet.get("attr_2_" + professionId + "_" + num).value()
+        }
+    }
+    log(initialData)
+    const holder = { "profession": signal(initialData) as Signal<Profession | undefined> };
+    (holder as any).value = computed(function() {
+        const profession = holder.profession()
+        if(profession !== undefined) {
+            return Math.round((_pSheet.attr[profession.attr_1]() + _pSheet.attr[profession.attr_2]()) / 2)
+        }
+        return undefined
+    }, [
+        holder.profession, 
+        _pSheet.attr['ADA'], 
+        _pSheet.attr['FOR'], 
+        _pSheet.attr['ADR'], 
+        _pSheet.attr['PER'], 
+        _pSheet.attr['EXP'], 
+        _pSheet.attr['CHA'], 
+        _pSheet.attr['POU'],
+        _pSheet.attr['RES'],
+        _pSheet.attr['ERU']
+    ])
+    return holder as ProfessionHolder
 }

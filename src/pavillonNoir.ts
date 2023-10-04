@@ -1,6 +1,6 @@
 import { pavillonSheet } from "./pavillonSheet"
-import { setupChoiceGroup, setupComps, setupDisplayedReputationPoints, setupOptionalGroup } from "./competences/competences"
-import { setupAttribut, setupValeurMetier } from "./attributs/attributs"
+import { setupChoiceRow, setupComps, setupDisplayedReputationPoints, setupOptionalGroup, setupOptionalRow, setupValeurMetier } from "./competences/competences"
+import { setupAttribut } from "./attributs/attributs"
 import { setupAge, setupAvantageEditEntry, setupFaiblesseEditEntry, setupJeunesse, setupOrigine, setupPeuple, setupPoids, setupProfession, setupReligion, setupTaille, setupTitre } from "./bio/bio"
 import { reputationListener } from "./reputation/reputation"
 import { setupRepeater } from "./utils/repeaters"
@@ -13,43 +13,62 @@ import { getSequelleData, rollResultHandler } from "./roll/rollHandler"
 init = function(sheet) {
     if(sheet.id() === "main") {
         
+        
         const pSheet = pavillonSheet(sheet)
         globalSheets[sheet.getSheetId()] = pSheet
-        Tables.get("attributs").each(function(attr: AttributEntity) {
-            setupAttribut(pSheet, attr)
-        })
-        setupValeurMetier(pSheet)
-        setupComps(pSheet)
+ 
+        try {
+            Tables.get("attributs").each(function(attr: AttributEntity) {
+                setupAttribut(pSheet, attr)
+            })
+            setupValeurMetier(pSheet)
+            setupComps(pSheet)
 
-        each(optionalCompSlots, function(val, key) {
-            if(key === "arme_blanche" || key === "arme_trait") {
-                setupChoiceGroup(pSheet, key, val)
-            } else {
-                setupOptionalGroup(pSheet, key, val)
-            }
+            each(optionalCompSlots, function(val, key) {
+                if(key === "arme_blanche" || key === "arme_trait") {
+                    setupOptionalGroup(pSheet, key, val, setupChoiceRow)
+                } else {
+                    setupOptionalGroup(pSheet, key, val, setupOptionalRow)
+                }
+            })
 
-        })
-        pSheet.find("character_name").text(sheet.properName())
-        reputationListener(pSheet, "inf")
-        reputationListener(pSheet, "glo")
-        setupDisplayedReputationPoints(pSheet, "glo")
-        setupDisplayedReputationPoints(pSheet, "inf")
-        setupTaille(pSheet)
-        setupPoids(pSheet)
-        setupAge(pSheet)
-        setupReligion(pSheet)
-        setupTitre(pSheet)
-        setupProfession(pSheet, "profession", 2)
-        setupProfession(pSheet, "poste_bord", 1)
-        setupPeuple(pSheet)
-        setupOrigine(pSheet)
-        setupJeunesse(pSheet, 1)
-        setupJeunesse(pSheet, 2)
-        setupRepeater(pSheet, "avantage_repeater", setupAvantageEditEntry, null, null)
-        setupRepeater(pSheet, "faiblesse_repeater", setupFaiblesseEditEntry, null, null)
-        setupDisplayedBlessures(pSheet)
-        setupSequelles(pSheet)
-        setupRepeater(pSheet, "weapon_repeater", setupWeaponEditEntry, setupWeaponViewEntry, null)
+            pSheet.find("character_name").text(sheet.properName())
+        } catch(e) {
+            log("ERREUR: Échec de l'initilisation des compétences et caractéristiques")
+        }
+        try {
+            reputationListener(pSheet, "inf")
+            reputationListener(pSheet, "glo")
+            setupDisplayedReputationPoints(pSheet, "glo")
+            setupDisplayedReputationPoints(pSheet, "inf")
+        } catch(e) {
+            log("ERREUR: Échec de l'initialisation de la réputation")
+        }
+        try {
+            setupTaille(pSheet)
+            setupPoids(pSheet)
+            setupAge(pSheet)
+            setupReligion(pSheet)
+            setupTitre(pSheet)
+            setupProfession(pSheet, "profession", 2)
+            setupProfession(pSheet, "poste_bord", 1)
+            setupPeuple(pSheet)
+            setupOrigine(pSheet)
+            setupJeunesse(pSheet, 1)
+            setupJeunesse(pSheet, 2)
+            setupRepeater(pSheet, "avantage_repeater", setupAvantageEditEntry, null, null)
+            setupRepeater(pSheet, "faiblesse_repeater", setupFaiblesseEditEntry, null, null)
+        } catch(e) {
+            log("ERREUR: Échec de l'initialisation des informations personnelles")
+        }
+
+        try {
+            setupSequelles(pSheet)
+            setupDisplayedBlessures(pSheet)
+            setupRepeater(pSheet, "weapon_repeater", setupWeaponEditEntry, setupWeaponViewEntry, null)
+        } catch(e) {
+            log("ERREUR: Échec de l'onglet combat")
+        }
     }  
 }
 

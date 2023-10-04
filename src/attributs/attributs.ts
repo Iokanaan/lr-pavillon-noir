@@ -23,8 +23,7 @@ export const setupAttribut = function(sheet: PavillonSheet, attr: Attribut) {
             attrCmp.virtualValue(attrCmp.value() - 1)
             setVirtualBg(attrCmp)
         }
-    })
-    sheet.attr[attr.id].set(sheet.find(attr.id + "_val").value() as number);
+    });
     (sheet.find(attr.id + "_val") as Component<number>).on("update", function(cmp) {
         sheet.attr[attr.id].set(cmp.value())
     })
@@ -53,42 +52,4 @@ const handleAttrRoll = function(sheet: PavillonSheet, title: string, target: num
         .roll()
 }
 
-export const setupValeurMetier = function(sheet: PavillonSheet) {
-    effect(function() {
-        for(let i=0;i<2;i++) {
-            const profession = sheet.professions[i]()
-            if(profession !== undefined) {
-                sheet.find("valeur_metier_label_" + (i+1)).value(profession.name)
-                sheet.find("valeur_metier_val_" + (i+1)).value(Math.round(
-                    (sheet.attr[profession.attr_1]() + 
-                    sheet.attr[profession.attr_2]()) / 2))
-                sheet.find("valeur_metier_label_" + (i+1)).show()
-                sheet.find("valeur_metier_val_" + (i+1)).show()
-            } else {
-                sheet.find("valeur_metier_label_" + (i+1)).hide()
-                sheet.find("valeur_metier_val_" + (i+1)).hide()
-            }
-        }
-        const posteBord = sheet.posteBord()
-        if(posteBord !== undefined) {
-            sheet.find("valeur_poste_bord_label_1").value(posteBord.name)
-            sheet.find("valeur_poste_bord_val_1").value(Math.round(
-                (sheet.attr[posteBord.attr_1]() + 
-                sheet.attr[posteBord.attr_2]()) / 2))
-        }
-    }, [
-        sheet.professions[0], 
-        sheet.professions[1], 
-        sheet.posteBord,
-        sheet.attr['ADA'], 
-        sheet.attr['FOR'], 
-        sheet.attr['ADR'], 
-        sheet.attr['PER'], 
-        sheet.attr['EXP'], 
-        sheet.attr['CHA'], 
-        sheet.attr['POU'],
-        sheet.attr['RES'],
-        sheet.attr['ERU']
-    ])
-}
 

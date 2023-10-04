@@ -102,6 +102,7 @@ declare global {
     }
 
 
+
     type DiceResultCallback = (e: string, callback: (sheet: Sheet<unknown>) => void) => void;
 
     declare const _: (s: string) => string

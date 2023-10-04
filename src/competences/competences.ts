@@ -2,6 +2,7 @@ import { typesComp } from "../globals"
 import { effect, mapCompetence, resetModifiers, setVirtualBg, signal } from "../utils/utils"
 
 export const setupComps = function(sheet: PavillonSheet) {
+
     const outlineSelected = function(comp: Competence) {
         const labelCmp = sheet.find(comp.id + "_label")
         const selectedComp = sheet.selectedComp()
@@ -11,6 +12,7 @@ export const setupComps = function(sheet: PavillonSheet) {
             labelCmp.addClass("text-info")
         }    
     }
+
     const setSelectedComp = function(comp: Competence) {
         const labelCmp = sheet.find(comp.id + "_label")
         const selectedComp = sheet.selectedComp()
@@ -26,13 +28,26 @@ export const setupComps = function(sheet: PavillonSheet) {
         })
     }
 
+    const setModifiers = function(sheet: PavillonSheet, comp: Competence) {
+        sheet.find(comp.id + "_plus").on("click", function() {
+            const compCmp = sheet.find(comp.id + "_val") as Component<number>
+            compCmp.virtualValue(compCmp.value() + 1)
+            setVirtualBg(compCmp)
+        })
+        sheet.find(comp.id + "_minus").on("click", function() {
+            const compCmp = sheet.find(comp.id + "_val") as Component<number>
+            if(compCmp.value() > 0) {
+                compCmp.virtualValue(compCmp.value() - 1)
+                setVirtualBg(compCmp)
+            }
+        })
+    }
+
     const setValUpdateListener = function(comp: Competence) {
         const valCmp = sheet.find(comp.id + "_val") as Component<number>
-        sheet.comp[comp.id] = signal(valCmp.value())
         valCmp.on("update", function(cmp) {
-            sheet.comp[comp.id].set(cmp.value())
+            sheet.comp[comp.id].value.set(cmp.value())
         })
-    
     }
 
     effect(function() {
@@ -55,173 +70,205 @@ export const setupComps = function(sheet: PavillonSheet) {
 
 }
 
-const setModifiers = function(sheet: PavillonSheet, comp: Competence) {
-    sheet.find(comp.id + "_plus").on("click", function() {
-        const compCmp = sheet.find(comp.id + "_val") as Component<number>
-        compCmp.virtualValue(compCmp.value() + 1)
-        setVirtualBg(compCmp)
-    })
-    sheet.find(comp.id + "_minus").on("click", function() {
-        const compCmp = sheet.find(comp.id + "_val") as Component<number>
-        if(compCmp.value() > 0) {
-            compCmp.virtualValue(compCmp.value() - 1)
-            setVirtualBg(compCmp)
-        }
-    })
-}
 
-export const setupOptionalGroup = function(sheet: PavillonSheet, key: string, maxSlots: number) {
-    const rowVisibilities: Signal<boolean>[] = []
+
+export const setupOptionalGroup = function(sheet: PavillonSheet, key: string, maxSlots: number, rowHandler: (sheet: PavillonSheet, key: string, num: number) => Signal<boolean> | undefined) {
+
+    const dependencies: Signal<boolean>[] = []
     for(let i=1; i<=maxSlots; i++) {
-        const rowVisible = setupOptionalRow(sheet, key, i)
-        rowVisibilities.push(rowVisible)
+        const dependency = rowHandler(sheet, key, i)
+        if(dependency !== undefined) {
+            dependencies.push(dependency)
+        }
     }
 
     sheet.find("add_" + key).on("click", function() {
         for(let i=1; i<=maxSlots; i++) {
             if(!sheet.find(key + "_" + i + "_val").visible()) {
                 sheet.find(key + "_" + i + "_input").show()
-                rowVisibilities[i-1].set(true)
+                dependencies[i-1].set(true)
                 break
             }
         }
     })
+
     effect(function() {
         let slotsLeft = false
-        for(let i=0; i<rowVisibilities.length; i++) {
-            slotsLeft = slotsLeft || !rowVisibilities[i]() 
+        for(let i=0; i<dependencies.length; i++) {
+            slotsLeft = slotsLeft || !dependencies[i]() 
         }
         if(slotsLeft) {
             sheet.find("add_" + key).show()
         } else {
             sheet.find("add_" + key).hide()
         }
-  }, rowVisibilities)
+  }, dependencies)
 }
 
-export const setupChoiceGroup = function(sheet: PavillonSheet, key: string, maxSlots: number) {
-    const rowVisibilities: Signal<boolean>[] = []
-    for(let i=1; i<=maxSlots; i++) {
-        const rowVisible = setupChoiceRow(sheet, key, i)
-        rowVisibilities.push(rowVisible)
+
+export const setupAttrSecondaires = function(sheet: PavillonSheet) {
+
+    effect(function() {
+        sheet.find("chance_val").text(sheet.chance().toString())
+    }, [sheet.chance])
+
+    effect(function() {
+        sheet.find("initiative_val").text(sheet.initiative().toString())
+    }, [sheet.initiative])
+
+    each(sheet.modifiers, function(modSignal, key) {
+        effect(function() {
+            sheet.find(key + "_val").text(sheet.modifiers.MDAdr().toString())
+        }, [modSignal])
+    })
+
+    each(sheet.commandement, function(cmdSignal, key) {
+        effect(function() {
+            sheet.find(key + "_val").text(sheet.modifiers.MDAdr().toString())
+        }, [cmdSignal])
+    })
+}
+
+export const setupValeurMetier = function(sheet: PavillonSheet) {
+
+    const setDisplay = function(labelCmpId: string, valCmpId: string, profession: Profession | undefined) {
+        if(profession !== undefined) {
+            sheet.find(labelCmpId).value(profession.name)
+            sheet.find(labelCmpId).show()
+            sheet.find(valCmpId).show()
+        } else {
+            sheet.find(labelCmpId).hide()
+            sheet.find(valCmpId).hide()
+        }
     }
 
-    sheet.find("add_" + key).on("click", function() {
-        for(let i=1; i<=maxSlots; i++) {
-            if(!sheet.find(key + "_" + i + "_val").visible()) {
-                sheet.find(key + "_" + i + "_choice").show()
-                rowVisibilities[i-1].set(true)
-                break
+    const setValue = function(valCmpId: string, value: number | undefined) {
+        if(value !== undefined) {
+            sheet.find(valCmpId).value(value.toString())
+        } else {
+            sheet.find(valCmpId).value("0")
+        }
+    }
+
+    effect(function() {
+        setDisplay( "valeur_poste_bord_label_1", "valeur_poste_bord_val_1", sheet.posteBord.profession())
+    }, [sheet.posteBord.profession])
+
+    effect(function() {
+        setValue("valeur_poste_bord_val_1", sheet.posteBord.value())
+    }, [sheet.posteBord.value])
+
+    for(let i=0; i<2; i++) {
+        effect(function() {
+            setDisplay("valeur_metier_label_" + (i+1), "valeur_metier_val_" + (i+1), sheet.professions[i].profession())
+        }, [sheet.professions[i].value])
+        effect(function() {
+            setValue("valeur_metier_label_" + (i+1), sheet.posteBord.value())
+        }, [sheet.professions[i].value])
+    }
+}
+
+
+export const setupOptionalRow = function(sheet: PavillonSheet, key: string, num: number) {
+
+    const row = key + "_" + num as CompetenceEnum
+    log(row)
+    const nameSignal = sheet.comp[row].actualName
+    if(nameSignal !== undefined) {
+        nameSignal.set(sheet.find(row + "_input").value() as string)
+        effect(function() {
+            if(nameSignal() !== "") {
+                sheet.find(row + "_label").show()
+                sheet.find(row + "_edit").show()
+                sheet.find(row + "_val").show()
+                sheet.find(row + "_xp").show()
+                sheet.find(row + "_pratique").show()
+                sheet.find(row + "_plus").show()
+                sheet.find(row + "_minus").show()
+            } else {
+                sheet.find(row + "_label").hide()
+                sheet.find(row + "_edit").hide()
+                sheet.find(row + "_val").hide()
+                sheet.find(row + "_xp").hide()
+                sheet.find(row + "_pratique").hide()
+                sheet.find(row + "_plus").hide()
+                sheet.find(row + "_minus").hide()
             }
-        }
-    })
-    
-    effect(function() {
-        let slotsLeft = false
-        for(let i=0; i<rowVisibilities.length; i++) {
-            slotsLeft = slotsLeft || !rowVisibilities[i]() 
-        }
-        if(slotsLeft) {
-            sheet.find("add_" + key).show()
-        } else {
-            sheet.find("add_" + key).hide()
-        }
-  }, rowVisibilities)
-}
+        }, [nameSignal])
 
+        const visible = signal(nameSignal() !== undefined && nameSignal() !== "")
 
-const setupOptionalRow = function(sheet: PavillonSheet, key: string, num: number) {
-
-    const row = key + "_" + num 
-    const optinalValue = signal(sheet.find(row + "_input").value())
-    const rowVisible = signal(sheet.find(row + "_label").visible())
-
-    effect(function() {
-        if(optinalValue() !== "") {
-            sheet.find(row + "_label").show()
-            sheet.find(row + "_edit").show()
-            sheet.find(row + "_val").show()
-            sheet.find(row + "_xp").show()
-            sheet.find(row + "_pratique").show()
-            sheet.find(row + "_plus").show()
-            sheet.find(row + "_minus").show()
-        } else {
+        sheet.find(row + "_edit").on("click", function() {
             sheet.find(row + "_label").hide()
             sheet.find(row + "_edit").hide()
-            sheet.find(row + "_val").hide()
-            sheet.find(row + "_xp").hide()
-            sheet.find(row + "_pratique").hide()
-            sheet.find(row + "_plus").hide()
-            sheet.find(row + "_minus").hide()
-        }
-        rowVisible.set(sheet.find(row + "_label").visible())
-    }, [optinalValue])
+            sheet.find(row + "_input").show()
+        })
 
-    sheet.find(row + "_edit").on("click", function(cmp) {
-        sheet.find(row + "_label").hide()
-        sheet.find(row + "_edit").hide()
-        sheet.find(row + "_input").show()
-    })
+        sheet.find(row + "_input").on("update", function(cmp) {
+            cmp.hide()
+            sheet.find(row + "_label").show()
+            sheet.find(row +  "_edit").show()
+            nameSignal.set(cmp.value() as string)
+            visible.set(cmp.value() !== "" && cmp.value() !== undefined)
+        })
 
-    sheet.find(row + "_input").on("update", function(cmp) {
-        cmp.hide()
-        sheet.find(row + "_label").show()
-        sheet.find(row +  "_edit").show()
-        optinalValue.set(cmp.value())
-    })
+        return visible
+    }
 
-    return rowVisible
+    return undefined
 }
 
-const setupChoiceRow = function(sheet: PavillonSheet, key: string, num: number) {
+export const setupChoiceRow = function(sheet: PavillonSheet, key: string, num: number) {
 
-    const row = key + "_" + num 
-    const optinalChoice = signal(sheet.find(row + "_choice").value())
-    const optinalValue = signal(sheet.find(row + "_input").value())
-    const rowVisible = signal(sheet.find(row + "_label").visible())
+    const row = key + "_" + num as CompetenceEnum
+    log(row)
+    const nameSignal = sheet.comp[row].actualName
+    if(nameSignal !== undefined) {
+        nameSignal.set(sheet.find(row + "_input").value() as string)
+        effect(function() {
+            if(nameSignal() !== "") {
+                sheet.find(row + "_label").show()
+                sheet.find(row + "_edit").show()
+                sheet.find(row + "_val").show()
+                sheet.find(row + "_xp").show()
+                sheet.find(row + "_pratique").show()
+                sheet.find(row + "_plus").show()
+                sheet.find(row + "_minus").show()
+            } else {
+                sheet.find(row + "_label").hide()
+                sheet.find(row + "_edit").hide()
+                sheet.find(row + "_val").hide()
+                sheet.find(row + "_xp").hide()
+                sheet.find(row + "_pratique").hide()
+                sheet.find(row + "_plus").hide()
+                sheet.find(row + "_minus").hide()
+            }
+            sheet.find(row + "_label").value(nameSignal())
+        }, [nameSignal])
 
-    log(optinalChoice())
+        const visible = signal(nameSignal() !== undefined && nameSignal() !== "")
 
-    effect(function() {
-        if(optinalValue() !== "") {
-            sheet.find(row + "_label").show()
-            sheet.find(row + "_edit").show()
-            sheet.find(row + "_val").show()
-            sheet.find(row + "_xp").show()
-            sheet.find(row + "_pratique").show()
-            sheet.find(row + "_plus").show()
-            sheet.find(row + "_minus").show()
-        } else {
+        sheet.find(row + "_edit").on("click", function(cmp) {
             sheet.find(row + "_label").hide()
             sheet.find(row + "_edit").hide()
-            sheet.find(row + "_val").hide()
-            sheet.find(row + "_xp").hide()
-            sheet.find(row + "_pratique").hide()
-            sheet.find(row + "_plus").hide()
-            sheet.find(row + "_minus").hide()
-        }
-        sheet.find(row + "_label").value(optinalValue())
-        rowVisible.set(sheet.find(row + "_label").visible())
-    }, [optinalValue])
+            sheet.find(row + "_choice").show()
+        })
 
-    sheet.find(row + "_edit").on("click", function(cmp) {
-        sheet.find(row + "_label").hide()
-        sheet.find(row + "_edit").hide()
-        sheet.find(row + "_choice").show()
-    })
+        sheet.find(row + "_input").on("update", function(cmp) {
+            sheet.find(row + "_choice").hide()
+            sheet.find(row + "_label").show()
+            sheet.find(row +  "_edit").show()
+            nameSignal.set(cmp.value() as string)
+            visible.set(cmp.value() !== "" && cmp.value() !== undefined)
+        })
 
-    sheet.find(row + "_input").on("update", function(cmp) {
-        sheet.find(row + "_choice").hide()
-        sheet.find(row + "_label").show()
-        sheet.find(row +  "_edit").show()
-        optinalValue.set(cmp.value())
-    })
+        sheet.find(row + "_choice").on("update", function(cmp) {
+            sheet.find(row + "_input").value(cmp.text())
+        })
 
-    sheet.find(row + "_choice").on("update", function(cmp) {
-        sheet.find(row + "_input").value(cmp.text())
-    })
-
-    return rowVisible
+        return visible
+    }
+    return undefined
 }
 
 export const setupDisplayedReputationPoints = function(sheet: PavillonSheet, typeRep: "glo" | "inf") {

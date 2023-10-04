@@ -103,7 +103,8 @@ export const mapCompetence = function(entity: CompetenceEntity): Competence {
         id: entity.id,
         name: entity.name,
         cc: entity.cc === "true",
-        metier: entity.metier === "true"
+        metier: entity.metier === "true",
+        optional: entity.optional === "true"
     }
 }
 
