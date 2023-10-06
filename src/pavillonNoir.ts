@@ -1,7 +1,7 @@
 import { pavillonSheet } from "./pavillonSheet"
-import { setupChoiceRow, setupComps, setupDisplayedReputationPoints, setupOptionalGroup, setupOptionalRow, setupValeurMetier } from "./competences/competences"
+import { setupAttrSecondaires, setupChoiceRow, setupComps, setupDisplayedReputationPoints, setupOptionalGroup, setupOptionalRow, setupValeurMetier } from "./competences/competences"
 import { setupAttribut } from "./attributs/attributs"
-import { setupAge, setupAvantageEditEntry, setupFaiblesseEditEntry, setupJeunesse, setupOrigine, setupPeuple, setupPoids, setupProfession, setupReligion, setupTaille, setupTitre } from "./bio/bio"
+import { setupAvantageEditEntry, setupBaseDescription, setupFaiblesseEditEntry, setupJeunesse, setupOrigine, setupPeuple, setupPoids, setupProfession, setupReligion, setupTaille, setupTitre } from "./bio/bio"
 import { reputationListener } from "./reputation/reputation"
 import { setupRepeater } from "./utils/repeaters"
 import { setupDisplayedBlessures, setupSequelles } from "./combat/blessures"
@@ -18,6 +18,7 @@ init = function(sheet) {
         globalSheets[sheet.getSheetId()] = pSheet
  
         try {
+
             Tables.get("attributs").each(function(attr: AttributEntity) {
                 setupAttribut(pSheet, attr)
             })
@@ -33,6 +34,7 @@ init = function(sheet) {
             })
 
             pSheet.find("character_name").text(sheet.properName())
+            setupAttrSecondaires(pSheet)
         } catch(e) {
             log("ERREUR: Échec de l'initilisation des compétences et caractéristiques")
         }
@@ -45,9 +47,9 @@ init = function(sheet) {
             log("ERREUR: Échec de l'initialisation de la réputation")
         }
         try {
-            setupTaille(pSheet)
-            setupPoids(pSheet)
-            setupAge(pSheet)
+            setupBaseDescription(pSheet, "taille")
+            setupBaseDescription(pSheet, "poids")
+            setupBaseDescription(pSheet, "age")
             setupReligion(pSheet)
             setupTitre(pSheet)
             setupProfession(pSheet, "profession", 2)

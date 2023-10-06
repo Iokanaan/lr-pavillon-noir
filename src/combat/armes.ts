@@ -58,19 +58,19 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         let compId = undefined
         switch(entry.value().type_arme_choice) {
             case "feu":
-                compVal = sheet.comp[entry.value().competence_arme_choice]()
+                compVal = sheet.comp[entry.value().competence_arme_choice].value()
                 break
             case "cac":
                 compId = getCompComponent(sheet, entry.value().competence_arme_choice, "arme_blanche") 
                 if(compId !== undefined) {
-                    compVal = sheet.comp[compId]()
+                    compVal = sheet.comp[compId].value()
                 }
                 break
             case "jet":
             case "trait":
                 compId = getCompComponent(sheet, entry.value().competence_arme_choice, "arme_trait") 
                 if(compId !== undefined) {
-                    compVal = sheet.comp[compId]()
+                    compVal = sheet.comp[compId].value()
                 }
                 break
         }
@@ -80,15 +80,15 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         setVirtualColor(entry.find("roll_formula_comp"), compVal + entry.value().modif_eff_input)
         return virtualVal
     }, [
-        sheet.comp["arme_blanche_1"],
-        sheet.comp["arme_blanche_2"],
-        sheet.comp["arme_blanche_3"],
-        sheet.comp["arme_blanche_4"],
-        sheet.comp["arme_trait_1"],
-        sheet.comp["arme_trait_2"],
-        sheet.comp["mousquet"],
-        sheet.comp["pistolet"],
-        sheet.comp["grenade"],
+        sheet.comp["arme_blanche_1"].value,
+        sheet.comp["arme_blanche_2"].value,
+        sheet.comp["arme_blanche_3"].value,
+        sheet.comp["arme_blanche_4"].value,
+        sheet.comp["arme_trait_1"].value,
+        sheet.comp["arme_trait_2"].value,
+        sheet.comp["mousquet"].value,
+        sheet.comp["pistolet"].value,
+        sheet.comp["grenade"].value,
         compModifier
     ])
 
@@ -173,12 +173,12 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
     })
 }
 
-const getCompComponent = function(sheet: PavillonSheet, comp: string, category: "arme_blanche" | "arme_trait"): string | undefined {
+const getCompComponent = function(sheet: PavillonSheet, comp: string, category: "arme_blanche" | "arme_trait"): CompetenceEnum | undefined {
     log(category)
     for(let i=1; i<=optionalCompSlots[category];i++) {
         log(sheet.find(category + "_" + i + "_choice").value())
         if(sheet.find(category + "_" + i + "_choice").value() === comp) {
-            return category + "_" + i
+            return category + "_" + i as CompetenceEnum
         }
     }
     return undefined

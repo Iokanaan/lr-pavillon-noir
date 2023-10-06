@@ -45,107 +45,87 @@ export const setupFaiblesseEditEntry = function(entry: Component<Avantage>) {
 
 
 export const setupTitre = function(sheet: PavillonSheet) {
-    const titre = signal(sheet.find("titre_input").value())
+
     sheet.find("add_titre").on("click", function() {
-        if(sheet.find("titre_label").visible() || sheet.find("no_titre").visible()) {
-            sheet.find("titre_label").hide()
+        if(sheet.find("titre_row").visible() || sheet.find("no_titre").visible()) {
+            sheet.find("titre_row").hide()
             sheet.find("no_titre").hide()
-            sheet.find("titre_input").show()
+            sheet.find("change_titre_row").show()
         } else {
-            if(sheet.find("titre_label").value() !== "") {
-                sheet.find("titre_label").show()
+            if(sheet.titre() !== "" && sheet.titre() !== undefined) {
+                sheet.find("titre_row").show()
             } else {
                 sheet.find("no_titre").show()
             }
-            sheet.find("titre_input").hide()
+            sheet.find("change_titre_row").hide()
         }
     })
     sheet.find("titre_input").on("update", function(cmp) {
-        titre.set(cmp.value())
+        sheet.titre.set(cmp.value() as string)
     })
+
     effect(function() {
-        if(titre() === "") {
-            sheet.find("titre_label").hide()
+        if(sheet.titre() === "" || sheet.titre() === undefined) {
+            sheet.find("titre_row").hide()
             sheet.find("no_titre").show()
-            sheet.find("titre_input").hide()
+            sheet.find("change_titre_row").hide()
         } else {
-            sheet.find("titre_label").show()
+            sheet.find("titre_row").show()
             sheet.find("no_titre").hide()
-            sheet.find("titre_input").hide()
+            sheet.find("change_titre_row").hide()
         }
-    }, [titre])
-}
-
-export const setupAge = function(sheet: PavillonSheet) {
-    sheet.find("age_title").on("click", function() {
-        if(sheet.find("age_label").visible()) {
-            sheet.find("age_label").hide()
-            sheet.find("age_input").show()
-        } else {
-            sheet.find("age_label").show()
-            sheet.find("age_input").hide()
-        }
-    })
-
-    sheet.find("age_input").on("update", function(cmp) {
-        sheet.find("age_label").value(cmp.value() + _(" ans"))
-        sheet.find("age_label").show()
-        sheet.find("age_input").hide()
-    })
-}
-
-export const setupPoids = function(sheet: PavillonSheet) {
-    sheet.find("poids_title").on("click", function() {
-        if(sheet.find("poids_label").visible()) {
-            sheet.find("poids_label").hide()
-            sheet.find("poids_input").show()
-        } else {
-            sheet.find("poids_label").show()
-            sheet.find("poids_input").hide()
-        }
-    })
-
-    sheet.find("poids_input").on("update", function(cmp) {
-        sheet.find("poids_label").value(cmp.value() + _(" kg"))
-        sheet.find("poids_label").show()
-        sheet.find("poids_input").hide()
-    })
+    }, [sheet.titre])
 }
 
 export const setupReligion = function(sheet: PavillonSheet) {
     sheet.find("religion_title").on("click", function() {
-        if(sheet.find("religion_label").visible()) {
-            sheet.find("religion_label").hide()
-            sheet.find("religion_input").show()
+        if(sheet.find("religion_row").visible()) {
+            sheet.find("religion_row").hide()
+            sheet.find("religion_change_row").show()
         } else {
-            sheet.find("religion_label").show()
-            sheet.find("religion_input").hide()
+            sheet.find("religion_row").show()
+            sheet.find("religion_change_row").hide()
         }
     })
 
     sheet.find("religion_input").on("update", function(cmp) {
-        sheet.find("religion_label").value(cmp.value())
-        sheet.find("religion_label").show()
-        sheet.find("religion_input").hide()
+        sheet.religion.set(cmp.value() as string)
     })
+    
+    effect(function() {
+        if(sheet.religion() !== undefined && sheet.religion() !== "") {
+            sheet.find("religion_label").value(sheet.religion())
+            sheet.find("religion_row").show()
+            sheet.find("religion_change_row").hide()
+        } else {
+            sheet.find("religion_row").hide()
+            sheet.find("religion_change_row").show()
+        }
+    },[sheet.religion])
 }
 
-export const setupTaille = function(sheet: PavillonSheet) {
-    sheet.find("taille_title").on("click", function() {
-        if(sheet.find("taille_label").visible()) {
-            sheet.find("taille_label").hide()
-            sheet.find("taille_input").show()
+export const setupBaseDescription = function(sheet: PavillonSheet, type: "taille" | "age" | "poids") {
+    sheet.find(type + "_title").on("click", function() {
+        if(sheet.find(type + "_label").visible()) {
+            sheet.find(type + "_label").hide()
+            sheet.find(type + "_input").show()
         } else {
-            sheet.find("taille_label").show()
-            sheet.find("taille_input").hide()
+            sheet.find(type + "_label").show()
+            sheet.find(type + "_input").hide()
         }
     })
 
-    sheet.find("taille_input").on("update", function(cmp) {
-        sheet.find("taille_label").value(cmp.value() + _(" cm"))
-        sheet.find("taille_label").show()
-        sheet.find("taille_input").hide()
+    sheet.find(type + "_input").on("update", function(cmp) {
+        if(/^[0-9]*$/.test(cmp.value() as string)) {
+            sheet[type].set(parseInt(cmp.value() as string))
+        }
     })
+
+    effect(function() {
+        sheet.find(type + "_label").value(sheet[type]())
+        sheet.find(type + "_label").show()
+        sheet.find(type + "_input").hide()
+    }, [sheet[type]])
 }
 
 export const setupOrigine = function(sheet: PavillonSheet) {
@@ -209,44 +189,53 @@ export const setupJeunesse = function(sheet: PavillonSheet, num: number) {
 }
 
 export const setupPeuple = function(sheet: PavillonSheet) {
-    const peuple = signal(sheet.find("peuple_input").value())
-    const groupe = signal(sheet.find("peuple_groupe_input").value())
+
     sheet.find("change_peuple").on("click", function() {
-        if(sheet.find("peuple_label").visible()) {
-            sheet.find("peuple_input").hide()
-            sheet.find("peuple_choice").show()
-            sheet.find("peuple_groupe_input").show()
-            sheet.find("custom_peuple").show()
+        if(sheet.find("origine_row").visible()) {
+            sheet.find("origine_row").hide()
+            sheet.find("origine_change_row").show()
             sheet.find("record_peuple").show()
-            sheet.find("peuple_label").hide()
+        } else {
+            sheet.find("origine_row").show()
+            sheet.find("origine_change_row").hide()
+            sheet.find("record_peuple").hide()
         }
     })
+
     sheet.find("record_peuple").on("click", function() {
-        sheet.find("peuple_input").hide()
-        sheet.find("peuple_choice").hide()
-        sheet.find("peuple_groupe_input").hide()
-        sheet.find("custom_peuple").hide()
-        sheet.find("record_peuple").hide()
-        sheet.find("peuple_label").show()
+        sheet.origine.set({
+            id: sheet.find("peuple_choice").value() as string,
+            peuple: sheet.find("peuple_input").value() as string,
+            groupe: sheet.find("peuple_groupe_input").value() as string
+        })
     })
+
+    effect(function() {
+        if(sheet.origine().peuple !== undefined && sheet.origine().peuple !== "") {
+            sheet.find("origine_row").show()
+            sheet.find("origine_change_row").hide()
+            sheet.find("record_peuple").hide()
+            if(sheet.origine().groupe !== "") {
+                sheet.find("peuple_label").value(sheet.origine().peuple + ' (' + sheet.origine().groupe + ')')
+            } else {
+                sheet.find("peuple_label").value(sheet.origine().peuple)
+            }
+        } else {
+            sheet.find("origine_row").hide()
+            sheet.find("origine_change_row").show()
+            sheet.find("record_peuple").show()
+        }
+    }, [sheet.origine])
+
     sheet.find("peuple_choice").on("update", function(cmp) {
         sheet.find("peuple_input").value(cmp.text())
-        peuple.set(cmp.text())
     })
-    sheet.find("peuple_groupe_input").on("update", function(cmp) {
-        groupe.set(cmp.value())
-    })
-    effect(function() {
-        if(groupe() !== "") {
-            sheet.find("peuple_label").value(peuple() + ' (' + groupe() + ')')
-        } else {
-            sheet.find("peuple_label").value(peuple())
-        }
-    }, [peuple, groupe])
+
     sheet.find("custom_peuple").on("click", function() {
         if(sheet.find("peuple_choice").visible()) {
             sheet.find("peuple_choice").hide()
             sheet.find("peuple_input").show()
+            sheet.find("peuple_choice").value(null)
         } else {
             sheet.find("peuple_input").hide()
             sheet.find("peuple_choice").show()
@@ -262,11 +251,16 @@ const professionToChoice = function(professions: ProfessionEntity[]) {
     return choices
 }
 
-const getSignal = function(sheet: PavillonSheet, typeMetier: "profession" | "poste_bord") {
+const getSignals = function(sheet: PavillonSheet, typeMetier: "profession" | "poste_bord") {
     if(typeMetier === "poste_bord") {
-        return [sheet.posteBord]
-    } 
-    return sheet.professions
+        return [sheet.posteBord.profession]
+    }
+    const professionSignals: Signal<Profession | undefined>[] = []
+    for(let i=0; i<sheet.professions.length; i++) {
+        professionSignals.push(sheet.professions[i].profession)
+    }
+    log(professionSignals)
+    return professionSignals
 }
 
 const getTable = function(typeMetier: "profession" | "poste_bord") {
@@ -277,7 +271,35 @@ const getTable = function(typeMetier: "profession" | "poste_bord") {
 }
 
 export const setupProfession = function(sheet: PavillonSheet, typeMetier: "profession" | "poste_bord", qte: number) {
-    const metierSignals = getSignal(sheet, typeMetier)
+
+    const professionSignals = getSignals(sheet, typeMetier)
+
+    sheet.find("add_" + typeMetier).on("click", function() {
+        let availableNum = 0
+        for(let i=0;i<qte;i++) {
+            if(professionSignals[i]() === undefined) {
+                availableNum = i + 1
+                break
+            }
+        }
+        if(availableNum !== 0) {
+            sheet.find("change_" + typeMetier + "_" + availableNum +  "_row").show()
+        }
+        log(availableNum)
+    })
+
+    effect(function() {
+        let noMetier = true
+        for(let i=0; i<qte; i++) {
+            noMetier = noMetier && (professionSignals[i]() === undefined) 
+        }
+        if(noMetier) {
+            sheet.find("no_" + typeMetier).show()
+        } else {
+            sheet.find("no_" + typeMetier).hide()
+        }
+    }, professionSignals)
+    
     const metierTable = getTable(typeMetier)
     const professionByType: Record<string, ProfessionEntity[]> = {};
     
@@ -288,129 +310,98 @@ export const setupProfession = function(sheet: PavillonSheet, typeMetier: "profe
         professionByType[val.type].push(val)
     });
 
-    const modes: Signal<"EDIT" | "CUSTOM" | "DISPLAY">[] = []
-    
-    for(let i=0;i<qte;i++) {
-        modes.push(signal("DISPLAY"))
-        setupSingleProfession(sheet, professionByType, typeMetier, modes[i], i+1)
+    for(let i=1; i<=qte; i++) {
+        setupSingleProfession(sheet, professionByType, typeMetier, i)
     }
 
-    sheet.find("add_" + typeMetier).on("click", function() {
-        for(let i=0;i<qte;i++) {
-            if(metierSignals[i].profession() === undefined && modes[i]() === "DISPLAY") {
-                modes[i].set("EDIT")
-                break
-            }
-        }
-    })
-
-    const dependencies = []
-    for(let i=0; i<qte; i++) {
-        dependencies.push(metierSignals[i].profession)
-    }
-    effect(function() {
-        let noMetier = true
-        for(let i=0; i<qte; i++) {
-            noMetier = noMetier && (metierSignals[i].profession() === undefined) 
-        }
-        if(noMetier) {
-            sheet.find("no_" + typeMetier).show()
-        } else {
-            sheet.find("no_" + typeMetier).hide()
-        }
-    }, dependencies)
 }
 
-const setupSingleProfession = function(sheet: PavillonSheet, professionByType: Record<string, ProfessionEntity[]>, typeMetier: "profession" |"poste_bord", mode: Signal<"DISPLAY"|"EDIT"|"CUSTOM">, num: number) {
+const setupSingleProfession = function(
+    sheet: PavillonSheet, 
+    professionByType: Record<string, ProfessionEntity[]>, 
+    typeMetier: "profession" | "poste_bord", 
+    num: number
+    ) {
 
-    const metierSignals = getSignal(sheet, typeMetier);
+    const professionRow = sheet.find(typeMetier + "_" + num + "_row") as Component<null>
+    const changeProfessionRow = sheet.find("change_" + typeMetier + "_" + num + "_row") as Component<null>
+    const metierChoiceCmp = sheet.find(typeMetier + "_choice_" + num) as ChoiceComponent<string>
+    const categoryChoiceCmp = sheet.find("type_" + typeMetier + "_choice_" + num) as ChoiceComponent<string>
+    const metierInputCmp = sheet.find(typeMetier + "_input_" + num) as Component<string>
+    const removeCmp = sheet.find("remove_" + typeMetier + "_" + num) as Component<string>
+    const metierLabelCmp = sheet.find(typeMetier + "_label_" + num) as Component<string>
+    const attr1Cmp = sheet.find("attr_1_" + typeMetier + "_" + num) as Component<AttributEnum>
+    const attr2Cmp = sheet.find("attr_2_" + typeMetier + "_" + num) as Component<AttributEnum>
+    
+    if(categoryChoiceCmp.value() === undefined) {
+        categoryChoiceCmp.value(Object.keys(professionByType)[0])
+    }
 
-    (sheet.find("type_"+ typeMetier + "_choice_" + num) as ChoiceComponent<string>).on("update", function(cmp) {
+    const metierChoices = professionToChoice(professionByType[categoryChoiceCmp.value()])
+    metierChoiceCmp.setChoices(metierChoices)
+    if(metierChoices[metierChoiceCmp.value()] === undefined) {
+        metierChoiceCmp.value(Object.keys(metierChoices)[0])
+    }
+
+    const selectedProfession = signal(Tables.get(getTable(typeMetier)).get(metierChoiceCmp.value()))
+
+    // Mise à jour de la catégorie : on change les métiers de la liste
+    categoryChoiceCmp.on("update", function(cmp) {
         const professionChoices = professionToChoice(professionByType[cmp.value()]);
-        (sheet.find(typeMetier + "_choice_" + num) as ChoiceComponent<string>).setChoices(professionChoices)
-        sheet.find(typeMetier + "_choice_" + num).value(Object.keys(professionChoices)[0])
-    });
-
-    effect(function() {
-        switch(mode()) {
-            case "EDIT":
-                sheet.find("no_" + typeMetier).hide()
-                sheet.find("type_" + typeMetier + "_choice_" + num).show()
-                sheet.find(typeMetier + "_choice_" + num).show()
-                sheet.find(typeMetier + "_input_" + num).hide()
-                sheet.find("attr_1_" + typeMetier + "_" + num).hide()
-                sheet.find("attr_2_" + typeMetier + "_" + num).hide()
-                sheet.find("custom_" + typeMetier + "_" + num).show()
-                sheet.find("record_" + typeMetier + "_" + num).show()
-                sheet.find(typeMetier + "_label_" + num).hide()
-                sheet.find("remove_" + typeMetier + "_" + num).hide()
-                break
-            case "CUSTOM":
-                sheet.find("type_" + typeMetier + "_choice_" + num).hide()
-                sheet.find(typeMetier + "_choice_" + num).hide()
-                sheet.find(typeMetier + "_input_" + num).show()
-                sheet.find("attr_1_" + typeMetier + "_" + num).show()
-                sheet.find("attr_2_" + typeMetier + "_" + num).show()
-                sheet.find("custom_" + typeMetier + "_" + num).show()
-                sheet.find("record_" + typeMetier + "_" + num).show()
-                sheet.find(typeMetier + "_label_" + num).hide()
-                sheet.find("remove_" + typeMetier + "_" + num).hide()
-                break
-            case "DISPLAY":
-                sheet.find("type_" + typeMetier + "_choice_" + num).hide()
-                sheet.find(typeMetier + "_choice_" + num).hide()
-                sheet.find(typeMetier + "_input_" + num).hide()
-                sheet.find("attr_1_" + typeMetier + "_" + num).hide()
-                sheet.find("attr_2_" + typeMetier + "_" + num).hide()
-                sheet.find("custom_" + typeMetier + "_" + num).hide()
-                sheet.find("record_" + typeMetier + "_" + num).hide()
-                sheet.find(typeMetier + "_label_" + num).show()
-                sheet.find("remove_" + typeMetier + "_" + num).show()
-                break
-        }
-    }, [mode]);
-
-
-    (sheet.find(typeMetier + "_choice_" + num) as ChoiceComponent<string>).on("update", function(cmp) {
-        const selectedProfession = Tables.get(getTable(typeMetier)).get(cmp.value())
-        sheet.find(typeMetier + "_input_" + num).value(selectedProfession.name)
-        sheet.find("attr_1_" + typeMetier + "_" + num).value(selectedProfession.attr_1)
-        sheet.find("attr_2_" + typeMetier + "_" + num).value(selectedProfession.attr_2)
-    });
-
-    sheet.find("remove_" + typeMetier + "_" + num).on("click", function() {
-        metierSignals[num - 1].profession.set(undefined)
+        metierChoiceCmp.setChoices(professionChoices)
+        metierChoiceCmp.value(Object.keys(professionChoices)[0])
     })
 
+    // Mise à jour du métier, on met à jour la profession sélectionnée
+    metierChoiceCmp.on("update", function(cmp) {
+        selectedProfession.set(Tables.get(getTable(typeMetier)).get(cmp.value()))
+    })
+
+    // Inscription du métier de la liste dans l'input
+    effect(function() {
+        metierInputCmp.value(_(selectedProfession().name))
+    }, [selectedProfession])
+    
+    const professionSignal = getSignals(sheet, typeMetier)[num - 1]
+    
+    // Suppression d'un élément : on retire la profession de la feuille
+    removeCmp.on("click", function() {
+        professionSignal.set(undefined)
+    })
+
+    // Affichage de la profession enregistrée
+    effect(function() {
+        const profession = professionSignal()
+        if(profession === undefined) {
+            professionRow.hide()
+            metierLabelCmp.value("")
+            metierInputCmp.value("")
+        } else {
+            professionRow.show()
+            metierLabelCmp.value(profession.name)
+            attr1Cmp.value(profession.attr_1)
+            attr2Cmp.value(profession.attr_2)
+        }
+    }, [professionSignal])
+
+    // Validation d'un élément, on ajoute la profession de la feuille
     sheet.find("record_" + typeMetier + "_" + num).on("click", function() {
-        metierSignals[num - 1].profession.set({
-            name: sheet.find(typeMetier + "_input_" + num).value() as string,
-            attr_1: sheet.find("attr_1_" + typeMetier + "_" + num).value() as AttributEnum,
-            attr_2: sheet.find("attr_2_" + typeMetier + "_" + num).value() as AttributEnum,
+        professionSignal.set({
+            name: metierInputCmp.value(),
+            attr_1: attr1Cmp.value(),
+            attr_2: attr2Cmp.value(),
         })
-        mode.set("DISPLAY")
+        changeProfessionRow.hide()
     })
 
-
+    // Changement d'affichage pour métier custom
     sheet.find("custom_" + typeMetier + "_" + num).on("click", function() {
-        if(mode() === "EDIT")  {
-            mode.set("CUSTOM")
+        if(sheet.find(typeMetier + "_" + num + "_list_col").visible()) {
+            sheet.find(typeMetier + "_" + num + "_custom_col").show()
+            sheet.find(typeMetier + "_" + num + "_list_col").hide()
         } else {
-            mode.set("EDIT")
+            sheet.find(typeMetier + "_" + num + "_custom_col").hide()
+            sheet.find(typeMetier + "_" + num + "_list_col").show()
         }
     })
-
-    effect(function() {
-        const profession = metierSignals[num - 1].profession()
-        if(profession !== undefined) {
-            sheet.find(typeMetier + "_label_" + num).value(profession.name)
-            sheet.find("remove_" + typeMetier + "_" + num).show()
-        } else {
-            sheet.find(typeMetier + "_label_" + num).value("")
-            sheet.find(typeMetier + "_input_" + num).value("")
-            sheet.find("remove_" + typeMetier + "_" + num).hide()
-        }
-    }, [metierSignals[num - 1].profession])
-
-
 }

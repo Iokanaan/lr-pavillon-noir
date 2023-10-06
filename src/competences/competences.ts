@@ -108,7 +108,22 @@ export const setupOptionalGroup = function(sheet: PavillonSheet, key: string, ma
 
 export const setupAttrSecondaires = function(sheet: PavillonSheet) {
 
+    sheet.find("chance_label").on("click", function(cmp) {
+        cmp.hide()
+        sheet.find("chance_facilite_row").show()
+    });
+
+    (sheet.find("chance_facilite_input") as Component<string>).on("update", function(cmp) {
+        if(/^[0-9]*$/.test(cmp.value())) {
+            new RollBuilder(sheet.raw()).expression("1d10 < " + (parseInt(cmp.value()) + sheet.chance())).roll()
+            sheet.find("chance_facilite_row").hide()
+            sheet.find("chance_facilite_input").value(null)
+            sheet.find("chance_label").show()
+        }
+    })
+
     effect(function() {
+        log(sheet.chance())
         sheet.find("chance_val").text(sheet.chance().toString())
     }, [sheet.chance])
 
@@ -118,31 +133,35 @@ export const setupAttrSecondaires = function(sheet: PavillonSheet) {
 
     each(sheet.modifiers, function(modSignal, key) {
         effect(function() {
-            sheet.find(key + "_val").text(sheet.modifiers.MDAdr().toString())
+            sheet.find(key + "_val").text(modSignal().toString())
         }, [modSignal])
     })
 
     each(sheet.commandement, function(cmdSignal, key) {
         effect(function() {
-            sheet.find(key + "_val").text(sheet.modifiers.MDAdr().toString())
+            sheet.find(key + "_val").text(cmdSignal().toString())
         }, [cmdSignal])
     })
 }
 
 export const setupValeurMetier = function(sheet: PavillonSheet) {
 
-    const setDisplay = function(labelCmpId: string, valCmpId: string, profession: Profession | undefined) {
+    const setDisplay = function(labelCmpId: string, valCmpId: string, subTextCmpId: string, profession: Profession | undefined) {
+        log(profession)
         if(profession !== undefined) {
             sheet.find(labelCmpId).value(profession.name)
+            sheet.find(subTextCmpId).value("(" + profession.attr_1 + " + " + profession.attr_2 + ") / 2")
             sheet.find(labelCmpId).show()
             sheet.find(valCmpId).show()
         } else {
             sheet.find(labelCmpId).hide()
+            sheet.find(subTextCmpId).hide()
             sheet.find(valCmpId).hide()
         }
     }
 
     const setValue = function(valCmpId: string, value: number | undefined) {
+        log(value)
         if(value !== undefined) {
             sheet.find(valCmpId).value(value.toString())
         } else {
@@ -151,21 +170,28 @@ export const setupValeurMetier = function(sheet: PavillonSheet) {
     }
 
     effect(function() {
-        setDisplay( "valeur_poste_bord_label_1", "valeur_poste_bord_val_1", sheet.posteBord.profession())
+        setDisplay( "valeur_poste_bord_label_1", "valeur_poste_bord_val_1", "poste_bord_1_subtext", sheet.posteBord.profession())
     }, [sheet.posteBord.profession])
 
     effect(function() {
         setValue("valeur_poste_bord_val_1", sheet.posteBord.value())
     }, [sheet.posteBord.value])
 
-    for(let i=0; i<2; i++) {
-        effect(function() {
-            setDisplay("valeur_metier_label_" + (i+1), "valeur_metier_val_" + (i+1), sheet.professions[i].profession())
-        }, [sheet.professions[i].value])
-        effect(function() {
-            setValue("valeur_metier_label_" + (i+1), sheet.posteBord.value())
-        }, [sheet.professions[i].value])
-    }
+    effect(function() {
+        setDisplay("valeur_metier_label_1", "valeur_metier_val_1", "metier_1_subtext", sheet.professions[0].profession())
+    }, [sheet.professions[0].profession])
+
+    effect(function() {
+        setValue("valeur_metier_val_1", sheet.professions[0].value())
+    }, [sheet.professions[0].value])
+
+    effect(function() {
+        setDisplay("valeur_metier_label_2", "valeur_metier_val_2", "metier_2_subtext", sheet.professions[1].profession())
+    }, [sheet.professions[1].profession])
+
+    effect(function() {
+        setValue("valeur_metier_val_2", sheet.professions[1].value())
+    }, [sheet.professions[1].value])
 }
 
 
