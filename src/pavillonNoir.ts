@@ -1,5 +1,5 @@
 import { pavillonSheet } from "./pavillonSheet"
-import { setupAttrSecondaires, setupChoiceRow, setupComps, setupOptionalGroup, setupOptionalRow, setupValeurMetier } from "./competences/competences"
+import { setupAttrSecondaires, setupComps, setupOptionalGroup, setupValeurMetier } from "./competences/competences"
 import { setupAttribut } from "./attributs/attributs"
 import { setupBaseDescription, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupReligion, setupTitre } from "./bio/bio"
 import { reputationListener } from "./reputation/reputation"

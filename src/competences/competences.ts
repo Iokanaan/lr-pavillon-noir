@@ -202,7 +202,7 @@ export const setupValeurMetier = function(sheet: PavillonSheet) {
 }
 
 
-export const setupOptionalRow = function(sheet: PavillonSheet, key: string, type: "input" | "choice", num: number) {
+const setupOptionalRow = function(sheet: PavillonSheet, key: string, type: "input" | "choice", num: number) {
 
     const row = key + "_" + num as CompetenceEnum
     const nameSignal = sheet.comp[row].actualName
