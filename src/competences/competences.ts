@@ -1,18 +1,10 @@
 import { typesComp } from "../globals"
-import { effect, mapCompetence, resetModifiers, setVirtualBg, signal } from "../utils/utils"
+import { effect, mapCompetence, setVirtualBg, signal } from "../utils/utils"
 
 export const setupComps = function(sheet: PavillonSheet) {
 
-    const outlineSelected = function(comp: Competence) {
-        const labelCmp = sheet.find(comp.id + "_label")
-        const selectedComp = sheet.selectedComp()
-        if(selectedComp === undefined || comp.id !== selectedComp.id) {
-            labelCmp.removeClass("text-info")
-        } else {
-            labelCmp.addClass("text-info")
-        }    
-    }
-
+    // Système de sélection au clic de la compétence
+    // Enregistrement de la compétence sélectionnée dans la feuille
     const setSelectedComp = function(comp: Competence) {
         const labelCmp = sheet.find(comp.id + "_label")
         const selectedComp = sheet.selectedComp()
@@ -28,6 +20,7 @@ export const setupComps = function(sheet: PavillonSheet) {
         })
     }
 
+    // Système de modificateurs +/-
     const setModifiers = function(sheet: PavillonSheet, comp: Competence) {
         sheet.find(comp.id + "_plus").on("click", function() {
             const compCmp = sheet.find(comp.id + "_val") as Component<number>
@@ -43,6 +36,7 @@ export const setupComps = function(sheet: PavillonSheet) {
         })
     }
 
+    // Mise à jour dans les signaux quand la compétence change de valeur
     const setValUpdateListener = function(comp: Competence) {
         const valCmp = sheet.find(comp.id + "_val") as Component<number>
         valCmp.on("update", function(cmp) {
@@ -50,14 +44,22 @@ export const setupComps = function(sheet: PavillonSheet) {
         })
     }
 
+    // Effet de surlignage quand une compétence est sélectionnée
     effect(function() {
         typesComp.forEach(function(typeComp) {
             Tables.get(typeComp).each(function(comp: CompetenceEntity) { 
-                outlineSelected(mapCompetence(comp)) 
+                const labelCmp = sheet.find(comp.id + "_label")
+                const selectedComp = sheet.selectedComp()
+                if(selectedComp === undefined || comp.id !== selectedComp.id) {
+                    labelCmp.removeClass("text-info")
+                } else {
+                    labelCmp.addClass("text-info")
+                }    
             })
         })
     }, [sheet.selectedComp])
 
+    // Boucler pour exécuter tous les fonctions précédentes sur toutes les compéteces
     typesComp.forEach(function(typeComp) {
         Tables.get(typeComp).each(function(e: CompetenceEntity) { 
             const comp = mapCompetence(e)
@@ -72,26 +74,33 @@ export const setupComps = function(sheet: PavillonSheet) {
 
 
 
-export const setupOptionalGroup = function(sheet: PavillonSheet, key: string, maxSlots: number, rowHandler: (sheet: PavillonSheet, key: string, num: number) => Signal<boolean> | undefined) {
+export const setupOptionalGroup = function(sheet: PavillonSheet, key: string, maxSlots: number, type: "input" | "choice") {
 
+    // Initialisation de chaque ligne, recupération d'un signal de visibilité
     const dependencies: Signal<boolean>[] = []
     for(let i=1; i<=maxSlots; i++) {
-        const dependency = rowHandler(sheet, key, i)
+        const dependency = setupOptionalRow(sheet, key, type, i)
         if(dependency !== undefined) {
             dependencies.push(dependency)
         }
     }
 
+    // Au clic sur add, cherche le prochain slot disponible et on l'affiche
     sheet.find("add_" + key).on("click", function() {
         for(let i=1; i<=maxSlots; i++) {
             if(!sheet.find(key + "_" + i + "_val").visible()) {
-                sheet.find(key + "_" + i + "_input").show()
+                if(type === "choice") {
+                    sheet.find(key + "_" + i + "_choice").show()
+                } else {
+                    sheet.find(key + "_" + i + "_input").show()
+                }
                 dependencies[i-1].set(true)
                 break
             }
         }
     })
 
+    // Cacher le bouton add quand tous les slots sont occupés
     effect(function() {
         let slotsLeft = false
         for(let i=0; i<dependencies.length; i++) {
@@ -123,7 +132,6 @@ export const setupAttrSecondaires = function(sheet: PavillonSheet) {
     })
 
     effect(function() {
-        log(sheet.chance())
         sheet.find("chance_val").text(sheet.chance().toString())
     }, [sheet.chance])
 
@@ -147,10 +155,10 @@ export const setupAttrSecondaires = function(sheet: PavillonSheet) {
 export const setupValeurMetier = function(sheet: PavillonSheet) {
 
     const setDisplay = function(labelCmpId: string, valCmpId: string, subTextCmpId: string, profession: Profession | undefined) {
-        log(profession)
         if(profession !== undefined) {
             sheet.find(labelCmpId).value(profession.name)
             sheet.find(subTextCmpId).value("(" + profession.attr_1 + " + " + profession.attr_2 + ") / 2")
+            sheet.find(subTextCmpId).show()
             sheet.find(labelCmpId).show()
             sheet.find(valCmpId).show()
         } else {
@@ -161,7 +169,6 @@ export const setupValeurMetier = function(sheet: PavillonSheet) {
     }
 
     const setValue = function(valCmpId: string, value: number | undefined) {
-        log(value)
         if(value !== undefined) {
             sheet.find(valCmpId).value(value.toString())
         } else {
@@ -195,10 +202,9 @@ export const setupValeurMetier = function(sheet: PavillonSheet) {
 }
 
 
-export const setupOptionalRow = function(sheet: PavillonSheet, key: string, num: number) {
+export const setupOptionalRow = function(sheet: PavillonSheet, key: string, type: "input" | "choice", num: number) {
 
     const row = key + "_" + num as CompetenceEnum
-    log(row)
     const nameSignal = sheet.comp[row].actualName
     if(nameSignal !== undefined) {
         nameSignal.set(sheet.find(row + "_input").value() as string)
@@ -227,86 +233,34 @@ export const setupOptionalRow = function(sheet: PavillonSheet, key: string, num:
         sheet.find(row + "_edit").on("click", function() {
             sheet.find(row + "_label").hide()
             sheet.find(row + "_edit").hide()
-            sheet.find(row + "_input").show()
+            if(type === "choice") {
+                sheet.find(row + "_choice").show()
+            } else {
+                sheet.find(row + "_input").show()
+            }
         })
 
         sheet.find(row + "_input").on("update", function(cmp) {
             cmp.hide()
+            if(type === "choice") {
+                sheet.find(row + "_choice").hide()
+            }
             sheet.find(row + "_label").show()
             sheet.find(row +  "_edit").show()
             nameSignal.set(cmp.value() as string)
             visible.set(cmp.value() !== "" && cmp.value() !== undefined)
         })
 
-        return visible
-    }
-
-    return undefined
-}
-
-export const setupChoiceRow = function(sheet: PavillonSheet, key: string, num: number) {
-
-    const row = key + "_" + num as CompetenceEnum
-    log(row)
-    const nameSignal = sheet.comp[row].actualName
-    if(nameSignal !== undefined) {
-        nameSignal.set(sheet.find(row + "_input").value() as string)
-        effect(function() {
-            if(nameSignal() !== "") {
-                sheet.find(row + "_label").show()
-                sheet.find(row + "_edit").show()
-                sheet.find(row + "_val").show()
-                sheet.find(row + "_xp").show()
-                sheet.find(row + "_pratique").show()
-                sheet.find(row + "_plus").show()
-                sheet.find(row + "_minus").show()
-            } else {
-                sheet.find(row + "_label").hide()
-                sheet.find(row + "_edit").hide()
-                sheet.find(row + "_val").hide()
-                sheet.find(row + "_xp").hide()
-                sheet.find(row + "_pratique").hide()
-                sheet.find(row + "_plus").hide()
-                sheet.find(row + "_minus").hide()
-            }
-            sheet.find(row + "_label").value(nameSignal())
-        }, [nameSignal])
-
-        const visible = signal(nameSignal() !== undefined && nameSignal() !== "")
-
-        sheet.find(row + "_edit").on("click", function(cmp) {
-            sheet.find(row + "_label").hide()
-            sheet.find(row + "_edit").hide()
-            sheet.find(row + "_choice").show()
-        })
-
-        sheet.find(row + "_input").on("update", function(cmp) {
-            sheet.find(row + "_choice").hide()
-            sheet.find(row + "_label").show()
-            sheet.find(row +  "_edit").show()
-            nameSignal.set(cmp.value() as string)
-            visible.set(cmp.value() !== "" && cmp.value() !== undefined)
-        })
-
-        sheet.find(row + "_choice").on("update", function(cmp) {
-            sheet.find(row + "_input").value(cmp.text())
-        })
-
-        return visible
-    }
-    return undefined
-}
-
-export const setupDisplayedReputationPoints = function(sheet: PavillonSheet, typeRep: "glo" | "inf") {
-    effect(function() {
-        const reputation = sheet.reputation[typeRep]()
-        for(let i=1;i<=10; i++) {
-            if(reputation >= i) {
-                sheet.find(typeRep + "_" + i).show()
-            } else {
-                sheet.find(typeRep + "_" + i).hide()
-            }
+        if(type === "choice") {
+            sheet.find(row + "_choice").on("update", function(cmp) {
+                sheet.find(row + "_input").value(cmp.text())
+            })
         }
-    }, [sheet.reputation[typeRep]])
+
+        return visible
+    }
+
+    return undefined
 }
-    
+
+

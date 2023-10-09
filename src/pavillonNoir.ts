@@ -1,13 +1,15 @@
 import { pavillonSheet } from "./pavillonSheet"
-import { setupAttrSecondaires, setupChoiceRow, setupComps, setupDisplayedReputationPoints, setupOptionalGroup, setupOptionalRow, setupValeurMetier } from "./competences/competences"
+import { setupAttrSecondaires, setupChoiceRow, setupComps, setupOptionalGroup, setupOptionalRow, setupValeurMetier } from "./competences/competences"
 import { setupAttribut } from "./attributs/attributs"
-import { setupAvantageEditEntry, setupBaseDescription, setupFaiblesseEditEntry, setupJeunesse, setupOrigine, setupPeuple, setupPoids, setupProfession, setupReligion, setupTaille, setupTitre } from "./bio/bio"
+import { setupBaseDescription, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupReligion, setupTitre } from "./bio/bio"
 import { reputationListener } from "./reputation/reputation"
 import { setupRepeater } from "./utils/repeaters"
 import { setupDisplayedBlessures, setupSequelles } from "./combat/blessures"
 import { setupWeaponEditEntry, setupWeaponViewEntry } from "./combat/armes"
 import { globalSheets, optionalCompSlots } from "./globals"
 import { getSequelleData, rollResultHandler } from "./roll/rollHandler"
+import { setupAvantageDisplayEntity, setupAvantageEditEntry } from "./bio/bioDetails"
+import { editableLabel } from "./utils/utils"
 
 
 init = function(sheet) {
@@ -27,9 +29,9 @@ init = function(sheet) {
 
             each(optionalCompSlots, function(val, key) {
                 if(key === "arme_blanche" || key === "arme_trait") {
-                    setupOptionalGroup(pSheet, key, val, setupChoiceRow)
+                    setupOptionalGroup(pSheet, key, val, "choice")
                 } else {
-                    setupOptionalGroup(pSheet, key, val, setupOptionalRow)
+                    setupOptionalGroup(pSheet, key, val, "input")
                 }
             })
 
@@ -41,8 +43,6 @@ init = function(sheet) {
         try {
             reputationListener(pSheet, "inf")
             reputationListener(pSheet, "glo")
-            setupDisplayedReputationPoints(pSheet, "glo")
-            setupDisplayedReputationPoints(pSheet, "inf")
         } catch(e) {
             log("ERREUR: Échec de l'initialisation de la réputation")
         }
@@ -58,8 +58,10 @@ init = function(sheet) {
             setupOrigine(pSheet)
             setupJeunesse(pSheet, 1)
             setupJeunesse(pSheet, 2)
-            setupRepeater(pSheet, "avantage_repeater", setupAvantageEditEntry, null, null)
-            setupRepeater(pSheet, "faiblesse_repeater", setupFaiblesseEditEntry, null, null)
+            setupRepeater(pSheet, "avantage_repeater", setupAvantageEditEntry("avantage", "animal_compagnie"), setupAvantageDisplayEntity(pSheet, "avantages"), null)
+            setupRepeater(pSheet, "faiblesse_repeater", setupAvantageEditEntry("desavantage", "borgne"), setupAvantageDisplayEntity(pSheet, "avantages"), null)
+            editableLabel(pSheet.find("history_title"), pSheet.find("history_txt"), pSheet.find("history_input"), pSheet.find("history_col"), pSheet.find("history_input_col"))
+            editableLabel(pSheet.find("contact_title"), pSheet.find("contact_txt"), pSheet.find("contact_input"), pSheet.find("contact_col"), pSheet.find("contact_input_col"))
         } catch(e) {
             log("ERREUR: Échec de l'initialisation des informations personnelles")
         }

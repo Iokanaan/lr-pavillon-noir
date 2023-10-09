@@ -30,6 +30,8 @@ declare global {
     interface Tables {
         get(elem: 'attributs'): Table<AttributEntity>
         get(elem: 'comp_maritimes' | 'comp_connaissances' | 'comp_techniques' | 'comp_physiques' | 'comp_sociales' | 'comp_combat'): Table<CompetenceEntity>
+        get(elem: 'avantages' | 'desavantages'): Table<Avantage>
+        get(elem: 'peuples'): Table<PeupleEntity>
         get(elem: 'professions' | 'postes_bord'): Table<ProfessionEntity>
         get(elem: 'types_professions' | 'types_postes_bord'): Table<ProfessionTypeEntity>
         get(elem: 'glo' | 'inf'): Table<ReputationEntity>

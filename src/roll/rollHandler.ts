@@ -1,7 +1,8 @@
-import { wordToInt } from "../utils/utils"
+import { mapSequelle, wordToInt } from "../utils/utils"
 
 export const rollResultHandler = function(result: DiceResult, callback: DiceResultCallback) {
     callback('DiceResult', function(sheet: Sheet<unknown>) {
+        // Gestion des jets d'attaque
         if(result.containsTag("attack")) {
             const res = result.children[0]
             sheet.get("result").text(res.children[0].total.toString() + " succès")
@@ -10,14 +11,17 @@ export const rollResultHandler = function(result: DiceResult, callback: DiceResu
                 sheet.get("degats").text((damage < 0 ? damage.toString() : "+" + damage.toString()) + " dégât(s)")
             }
             sheet.get("localisation").text(Tables.get("localisations").get(res.children[1].total.toString()).name)
+        // Gestion des jets de séquelle
         } else if(result.containsTag("sequelle")) {
             handleSequelle(sheet, result)
+        // Gestion par défaut
         } else {
             sheet.get("result").text(result.total.toString() + " succès")
         }
     })
 }
 
+// Fonction de gestion de la séquelle
 export const handleSequelle = function(sheet: Sheet, result: DiceResult) {
     const sequelle = getSequelleData(result.total, result.tags)
     if(sequelle !== undefined) {
@@ -25,19 +29,11 @@ export const handleSequelle = function(sheet: Sheet, result: DiceResult) {
     }
 }
 
-export const mapSequelle = function(e: SequelleEntity): Sequelle {
-    return  {
-        min: parseInt(e.min),
-        max: parseInt(e.max),
-        short_description: e.short_description,
-        description: e.description,
-        effect: e.effect
-    }
-}
 
 export const getSequelleData = function(total: number, tags: string[]) {
     let table: Table<SequelleEntity> | undefined = undefined
     let localisation: string | undefined = undefined
+    // Récupération des données selon la localisation de la séquelle
     if(tags.indexOf('tete') !== -1) {
         table = Tables.get("sequelles_tete")
         localisation = _("Tête")
@@ -75,6 +71,7 @@ export const getSequelleData = function(total: number, tags: string[]) {
     return undefined
 }
 
+// Fonction pour traduire la valeur d'un tag en integer
 const parseIntTag = function(tags: string[], regex: RegExp): number | undefined {
     const res = tags.filter(function(e) { return regex.test(e) })
     if(res.length !== 0) {

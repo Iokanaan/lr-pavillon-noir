@@ -35,7 +35,7 @@ const handleCompRoll = function(sheet: PavillonSheet, title: string, selectedCom
     if(nDice > 0) {
         roll.expression(nDice + "d10 <={1:2} " + target)
     } else {
-        if(selectedComp.metier) {
+        if(selectedComp.metier || hasMalusArmeAFeu(sheet, selectedComp)) {
             roll.expression("1d20 <={1:2} " + target)
         } else {
             roll.expression("1d12 <={1:2} " + target)
@@ -52,4 +52,17 @@ const handleAttrRoll = function(sheet: PavillonSheet, title: string, target: num
         .roll()
 }
 
-
+// Fonction un peu moche pour prendre en compte l'origine pour les compétences d'arme a feu
+const hasMalusArmeAFeu = function(sheet: PavillonSheet, selectedComp: Competence) {
+    const isCompArmeAFeu = ["mousquet", "grenade", "pistolet"].indexOf(selectedComp.id) !== -1
+    if(!isCompArmeAFeu) {
+        return false
+    }
+    if(!sheet.origine().indAfr) {
+        return false
+    }
+    if(sheet.origine().id === "indiens_mosquitos" && selectedComp.id === "mousquet") {
+        return false
+    }
+    return true
+}

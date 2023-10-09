@@ -45,6 +45,7 @@ export const setupRepeater = function(
     })
 }
 
+// À appeler quand on réinitialise toutes les données d'un repeater ou au dépôt d'un craft
 export const reset = function(sheet: PavillonSheet, repeaterId: string,     
     setupEditEntry: ((entry: Component<any>) => void) | null,
     setupViewEntry: ((entry: Component<any>) => void) | null

@@ -34,7 +34,7 @@ declare global {
         comp: Record<CompetenceEnum, CompSignals>,
         religion: Signal<string>,
         titre: Signal<string | undefined>,
-        reputation: Record<"glo" | "inf", Computed<number>>,
+        reputation: Record<"glo" | "inf", { score: Signal<number>, level: Computed<number> }>,
         chance: Computed<number>,
         initiative: Computed<number>,
         taille: Signal<number | undefined>,
@@ -43,8 +43,13 @@ declare global {
         origine: Signal<{
             id: string | null,
             peuple: string,
-            groupe: string
-        }>
+            groupe: string,
+            indAfr: boolean
+        }>,
+        origineSociale: Signal<string>,
+        jeunesse: Signal<string>[],
+        avantages: Signal<Record<string, Avantage>>,
+        desavantages: Signal<Record<string, Avantage>>
     } & ExtendedSheet<CharData>
 
     type Competence = {
@@ -122,6 +127,28 @@ declare global {
         name: string
     }
 
+    type OrigineSocialeEntity = {
+        id: string,
+        name: string
+    }
+
+    type OrigineSociale = {
+        id: string,
+        name: string
+    }
+
+    type PeupleEntity = {
+        id: string,
+        name: string,
+        ind_afr: string
+    }
+
+    type Peuple = {
+        id: string,
+        name: string,
+        ind_afr: boolean
+    }
+
     type TypeArme = "cac" | "feu" | "jet" | "trait"
     type AttributEnum = "ADR" | "ADA" | "RES" | "FOR" | "ERU" | "PER" | "EXP" | "CHA" | "POU"
     type Modificateur = "MDFor" | "MDAdr"
@@ -129,7 +156,7 @@ declare global {
 
     type WeaponEntity = {
         id: string,
-        attr: Attribut,
+        attr: AttributEnum,
         type: TypeArme,
         modif_eff: string,
         modif_fac: string,
@@ -138,7 +165,7 @@ declare global {
         recharge: string,
         comp: string,
         modif_degats: Modificateur,
-        mains: string,
+        mains: "1" | "2",
         taille: LongueurArme,
         name: string,
         notes: string
@@ -146,7 +173,7 @@ declare global {
 
     type Weapon = {
         id: string,
-        attr: Attribut,
+        attr: AttributEnum,
         type: TypeArme,
         modif_eff: number,
         modif_fac: number,
@@ -155,7 +182,7 @@ declare global {
         recharge: string,
         comp: string,
         modif_degats: Modificateur,
-        mains: number,
+        mains: 1 | 2,
         taille: LongueurArme,
         name: string,
         notes: string

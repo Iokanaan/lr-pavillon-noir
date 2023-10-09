@@ -3,6 +3,13 @@ import { computed, intToWord, mapCompetence, signal } from "./utils/utils"
 
 export const pavillonSheet = function(sheet: Sheet) {
 
+    const _pSheet: any = {
+        raw: function() { return sheet },
+        find: function(id: string) { return sheet.get(id)},
+        stringId: function() { return intToWord(sheet.getSheetId())},
+        entryStates: {}
+    }
+
     const compSignals: any = {}
     typesComp.forEach(function(typeComp) {
         (Tables.get(typeComp) as Table<CompetenceEntity>).each(function(e) {
@@ -25,27 +32,24 @@ export const pavillonSheet = function(sheet: Sheet) {
         attrSignals[a.id] = signal(sheet.get(a.id + "_val").value())
     })
 
-    const _pSheet: any = {
-        raw: function() { return sheet },
-        find: function(id: string) { return sheet.get(id)},
-        stringId: function() { return intToWord(sheet.getSheetId())},
-        entryStates: {},
-        selectedComp: signal(undefined),
-        attr: attrSignals,
-        comp: compSignals,
-        origine: signal({
-            id: sheet.get("peuple_choice").value(),
-            peuple: sheet.get("peuple_input").value(),
-            groupe: sheet.get("peuple_groupe_input").value(),
-        }),
-        religion: signal(sheet.get("religion_input").value() as string),
-        titre: signal(sheet.get("titre_input").value()),
-        reputation: {
-            glo: signal(sheet.get("glo_points").value()),
-            inf: signal(sheet.get("inf_points").value())
-        }
-    }
+    // Caractéristiques / compétences
+    _pSheet.selectedComp = signal(undefined)
+    _pSheet.attr = attrSignals
+    _pSheet.comp = compSignals;
 
+    // Détails personnels
+    _pSheet.origine = signal({
+            id: sheet.get("peuple_choice").value() as string,
+            peuple: sheet.get("peuple_input").value() as string,
+            groupe: sheet.get("peuple_groupe_input").value() as string,
+    })
+    _pSheet.religion = signal(sheet.get("religion_input").value() as string)
+    _pSheet.titre = signal(sheet.get("titre_input").value() as string)
+    log(_pSheet.titre())
+    _pSheet.origineSociale = signal(sheet.get("origine_sociale_input").value() as string)
+    _pSheet.jeunesse = [signal(sheet.get("jeunesse_1_input").value() as string), signal(sheet.get("jeunesse_2_input").value() as string)]
+    _pSheet.professions = [buildProfession(_pSheet, sheet, "profession", 1), buildProfession(_pSheet, sheet, "profession", 2)]
+    _pSheet.posteBord = buildProfession(_pSheet, sheet, "poste_bord", 1)
     if(/^[0-9]*$/.test(sheet.get("taille_input").value())) {
         _pSheet.taille = signal(parseInt(sheet.get("taille_input").value()))
     } else {
@@ -63,12 +67,26 @@ export const pavillonSheet = function(sheet: Sheet) {
     } else {
         _pSheet.poids = signal(undefined)
     }
+    _pSheet.avantages = signal({} as Record<string, Avantage>)
+    _pSheet.desavantages = signal({} as Record<string, Avantage>)
 
-    _pSheet.professions = [buildProfession(_pSheet, sheet, "profession", 1), buildProfession(_pSheet, sheet, "profession", 2)]
-    _pSheet.posteBord = buildProfession(_pSheet, sheet, "poste_bord", 1)
-    log(_pSheet.professions)
+
+    // Réputation
+    _pSheet.reputation = {
+        glo: {
+            score: signal(sheet.get("glo_points").value() as number)
+        },
+        inf: {
+            score: signal(sheet.get("inf_points").value() as number)
+        } 
+    }   
+    
+    _pSheet.reputation.glo.level = reputationLevel(_pSheet.reputation.glo.score) 
+    _pSheet.reputation.inf.level = reputationLevel(_pSheet.reputation.inf.score)
+
+   
+    // Caractéristiques secondaires
     _pSheet.chance = computed(function() {
-        log("process chance")
         return _pSheet.attr["POU"]() - 5
     }, [_pSheet.attr["POU"]])
 
@@ -77,6 +95,7 @@ export const pavillonSheet = function(sheet: Sheet) {
         return _pSheet.attr['ADA']()
     }, [_pSheet.attr['ADA']])
 
+    // Valeurs de métier
     _pSheet.commandement = {
         "capitaine": computed(function() {
             return Math.round((_pSheet.attr['CHA']() + _pSheet.attr['ERU']()) / 2)
@@ -98,6 +117,7 @@ export const pavillonSheet = function(sheet: Sheet) {
         }, [_pSheet.attr["PER"], _pSheet.attr["FOR"]])
     }
 
+    // Modificateurs
     _pSheet.modifiers = {
         "MDFor": computed(function() {
             const force = _pSheet.attr['FOR']()
@@ -138,9 +158,9 @@ export const pavillonSheet = function(sheet: Sheet) {
 
 const buildProfession = function(_pSheet: {"attr": Record<AttributEnum, Signal<number>>}, sheet: Sheet, professionId: string, num: number): ProfessionHolder {
     let initialData = undefined
-    if(sheet.get(professionId + "_label_" + num).value() !== "" && sheet.get(professionId + "_label_" + num).value() !== undefined) {
+    if(sheet.get(professionId + "_input_" + num).value() !== "" && sheet.get(professionId + "_input_" + num).value() !== undefined) {
         initialData = {
-            name: sheet.get(professionId + "_label_" + num).value(),
+            name: sheet.get(professionId + "_input_" + num).value(),
             attr_1: sheet.get("attr_1_" + professionId + "_" + num).value(),
             attr_2: sheet.get("attr_2_" + professionId + "_" + num).value()
         }
@@ -165,4 +185,41 @@ const buildProfession = function(_pSheet: {"attr": Record<AttributEnum, Signal<n
         _pSheet.attr['ERU']
     ])
     return holder as ProfessionHolder
+}
+
+const reputationLevel = function(reputationScore: Signal<number>) {
+    return computed(function() {
+        const rep = reputationScore() 
+        if(rep < 50) {
+            return 0
+        }
+        if(rep < 100) {
+            return 1
+        }
+        if(rep < 150) {
+            return 2
+        }
+        if(rep < 200) {
+            return 3
+        }
+        if(rep < 300) {
+            return 4
+        }
+        if(rep < 500) {
+            return 5
+        }
+        if(rep < 1000) {
+            return 6
+        }
+        if(rep < 2000) {
+            return 7
+        }
+        if(rep < 5000) {
+            return 8
+        }
+        if(rep < 10000) {
+            return 9
+        }
+        return 10
+    }, [reputationScore])
 }

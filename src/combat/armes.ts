@@ -1,33 +1,17 @@
 import { globalSheets, optionalCompSlots } from "../globals"
-import { computed, effect, intToWord, signal } from "../utils/utils"
+import { computed, effect, intToWord, mapWeaponEntity, signal } from "../utils/utils"
 
-const mapWeaponEntity = function(e: WeaponEntity): Weapon {
-    return {
-        id: e.id,
-        attr: e.attr,
-        type: e.type,
-        modif_eff: parseInt(e.modif_eff),
-        modif_fac: parseInt(e.modif_fac),
-        portee: parseInt(e.portee),
-        degats: parseInt(e.degats),
-        recharge: e.recharge,
-        comp: e.comp,
-        modif_degats: e.modif_degats,
-        mains: parseInt(e.mains),
-        taille: e.taille,
-        name: e.name,
-        notes: e.notes
-    }
-}
 
+// Converti les competences d'arme en choix pour repeater
 const compArmeToChoices = function(comptences: Table<CompetenceCombatEntity>) {
     const choices: Record<string, string> = {}
     comptences.each(function(entity) {
-        choices[entity.id] = entity.name
+        choices[entity.id] = _(entity.name)
     })
     return choices
 }
 
+// Applique une couleur si modificateur
 const setVirtualColor = function(cmp: Component<string>, refValue: number) {
     if(parseInt(cmp.value()) > refValue) {
         cmp.addClass("text-success")
@@ -74,7 +58,6 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
                 }
                 break
         }
-        log(compVal)
         const virtualVal = compVal + compModifier() + entry.value().modif_eff_input
         entry.find("roll_formula_comp").value(virtualVal)
         setVirtualColor(entry.find("roll_formula_comp"), compVal + entry.value().modif_eff_input)
@@ -93,7 +76,6 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
     ])
 
     const damageModifier = signal(0)
-    log("setyp deatag")
     const virtualDamage = computed(function() {
         let bonus = 0
         if(entry.value().has_modificateur_degats && entry.value().modif_degats_choice !== "0") {
@@ -168,15 +150,13 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         expression = "(" + expression + ")"
         expression += " + 1d6[localisation]"
         expression = "(" + expression + ")[attack," + "damage_" + intToWord(virtualDamage()) + "]"
-        log(expression)
         new RollBuilder(entry.sheet()).title(cmp.text()).expression(expression).roll()
     })
 }
 
+// Cherche la bonne competence a prendre selon le libellé
 const getCompComponent = function(sheet: PavillonSheet, comp: string, category: "arme_blanche" | "arme_trait"): CompetenceEnum | undefined {
-    log(category)
     for(let i=1; i<=optionalCompSlots[category];i++) {
-        log(sheet.find(category + "_" + i + "_choice").value())
         if(sheet.find(category + "_" + i + "_choice").value() === comp) {
             return category + "_" + i as CompetenceEnum
         }
@@ -186,131 +166,142 @@ const getCompComponent = function(sheet: PavillonSheet, comp: string, category: 
 
 export const setupWeaponEditEntry = function(entry: Component<WeaponData>) {
 
-    if(entry.find("modif_degats_choice").value() === undefined || entry.find("modif_degats_choice").value() === null) {
-        entry.find("modif_degats_choice").value("0")
+    // Définition des componenents
+    const typeArmeChoiceCmp = entry.find("type_arme_choice") as ChoiceComponent<TypeArme>
+    const typeArmeIntCmp = entry.find("type_arme_int") as Component<number>
+    const modifDegatsCmp = entry.find("modif_degats_choice") as ChoiceComponent<"0" | Modificateur>
+    const attrArmeCmp = entry.find("attr_arme_choice") as ChoiceComponent<AttributEnum>
+    const longueurCmp = entry.find("longueur_arme_choice") as ChoiceComponent<LongueurArme>
+    const modifEffCmp = entry.find("modif_eff_input") as Component<number>
+    const modifFacCmp = entry.find("modif_fac_input") as Component<number>
+    const compArmeCmp = entry.find("competence_arme_choice") as ChoiceComponent<string>
+    const nbMainsCmp = entry.find("nb_mains_input") as Component<1 | 2>
+    const hasModifDegats = entry.find("has_modificateur_degats") as Component<boolean>
+    const longueurArmeInputCmp = entry.find("longueur_arme_input") as Component<string>
+    const nomArme = entry.find("nom_arme_input") as Component<string>
+    const templateCmp = entry.find("template_choice") as ChoiceComponent<string>
+    const porteeCmp = entry.find("portee_input") as Component<number>
+    const rechargeCmp = entry.find("recharge_input") as Component<string>
+    const degatsCmp = entry.find("degats_input") as Component<number>
+    const notesCmp = entry.find("notes_input") as Component<string>
+    const cacRow = entry.find("cac_row") as Component<null>
+    const distRow = entry.find("dist_row") as Component<null>
+
+    // Définition de valeurs pas défaut
+    if(entry.value().modif_degats_choice === undefined || entry.value().modif_degats_choice === null) {
+        modifDegatsCmp.value("0")
     }
 
-    if(entry.find("type_arme_choice").value() === undefined || entry.find("type_arme_choice").value() === null) {
-        entry.find("type_arme_choice").value("cac")
+    if(entry.value().type_arme_choice === undefined || entry.value().type_arme_choice === null) {
+        typeArmeChoiceCmp.value("cac")
     }
 
-    if(entry.find("attr_arme_choice").value() === undefined || entry.find("attr_arme_choice").value() === null) {
-        entry.find("attr_arme_choice").value("ADR")
+    if(entry.value().attr_arme_choice === undefined || entry.value().attr_arme_choice === null) {
+        attrArmeCmp.value("ADR")
     }
 
-    if(entry.find("longueur_arme_choice").value() === undefined || entry.find("longueur_arme_choice").value() === null) {
-        entry.find("longueur_arme_choice").value("courte")
+    if(entry.value().longueur_arme_choice === undefined || entry.value().longueur_arme_choice === null) {
+        longueurCmp.value("courte")
     }
 
     if(entry.value().modif_eff_input === undefined || entry.value().modif_eff_input === null) {
-        entry.find("modif_eff_input").value(0)
+        modifEffCmp.value(0)
     }
 
     if(entry.value().modif_fac_input === undefined || entry.value().modif_fac_input === null) {
-        entry.find("modif_fac_input").value(0)
+        modifFacCmp.value(0)
     }
 
-    if(entry.find("competence_arme_choice").value() === undefined || entry.find("competence_arme_choice").value() === null) {
-        entry.find("competence_arme_choice").value("baton")
+    if(entry.value().competence_arme_choice === undefined || entry.value().competence_arme_choice === null) {
+        compArmeCmp.value("baton")
     }
 
-    // Bug sur l'initialisation
-    if(entry.find("nb_mains_input").value() === 1) {
-        entry.find("nb_mains_input").value(1)
+    if(entry.value().nb_mains_input === undefined || entry.value().nb_mains_input === null) {
+        nbMainsCmp.value(1)
     }
 
-    const typeArme = signal(entry.find("type_arme_choice").value() as TypeArme)
+    // Signal local pour définir la liste des competences à afficher selon le type d'arme
+    const typeArme = signal(typeArmeChoiceCmp.value())
     effect(function() {
         let choices = undefined;
         if(typeArme() === "cac") {
-            entry.find("longueur_arme_choice").show()
-            entry.find("nb_mains_input").show()
-            entry.find("longueur_arme_label").show()
-            entry.find("nb_mains_label").show()
-            entry.find("portee_input").hide()
-            entry.find("recharge_input").hide()
-            entry.find("portee_label").hide()
-            entry.find("portee_m_label").hide()
-            entry.find("recharge_label").hide()
+            cacRow.show()
+            distRow.hide()
         } else {
-            entry.find("longueur_arme_choice").hide()
-            entry.find("nb_mains_input").hide()
-            entry.find("longueur_arme_label").hide()
-            entry.find("nb_mains_label").hide()
-            entry.find("portee_input").show()
-            entry.find("recharge_input").show()
-            entry.find("portee_label").show()
-            entry.find("portee_m_label").show()
-            entry.find("recharge_label").show()
+            cacRow.hide()
+            distRow.show()
         }
         switch(typeArme()) {
             case "cac":
-                entry.find("type_arme_int").value(1);
+                typeArmeIntCmp.value(1);
                 choices = compArmeToChoices(Tables.get("comp_armes_blanches"))
                 break
             case "feu":
-                entry.find("type_arme_int").value(2);
+                typeArmeIntCmp.value(2);
                 choices = compArmeToChoices(Tables.get("comp_armes_feu"))
                 break
             case "jet":
-                entry.find("type_arme_int").value(3);
+                typeArmeIntCmp.value(3);
                 choices = compArmeToChoices(Tables.get("comp_armes_trait"))
                 break
             case "trait":
-                entry.find("type_arme_int").value(4);
+                typeArmeIntCmp.value(4);
                 choices = compArmeToChoices(Tables.get("comp_armes_trait"))
                 break
             default:
         }
         if(choices !== undefined) {
-            (entry.find("competence_arme_choice") as ChoiceComponent<string>).setChoices(choices)
-            if(choices[entry.find("competence_arme_choice").value()] === undefined) {
-                entry.find("competence_arme_choice").value(Object.keys(choices)[0])
+            compArmeCmp.setChoices(choices)
+            if(choices[compArmeCmp.value()] === undefined) {
+                compArmeCmp.value(Object.keys(choices)[0])
             }
         }
     }, [typeArme])
 
-    const degatChoice = signal(entry.find("modif_degats_choice").value() as "0" | Modificateur)
-    effect(function() {
-        entry.find("has_modificateur_degats").value(degatChoice() !== "0")
-    }, [degatChoice])
-
-    const longueurArme = signal(entry.find("longueur_arme_choice").text())
-    effect(function() {
-        entry.find("longueur_arme_input").value(longueurArme())
-    }, [longueurArme])
-
-    entry.find("longueur_arme_choice").on("update", function(cmp) {
-        longueurArme.set(cmp.text())
-    })
-
-    entry.find("type_arme_choice").on("update", function(cmp) {
+    typeArmeChoiceCmp.on("update", function(cmp) {
         typeArme.set(cmp.value())
     })
 
-    entry.find("modif_degats_choice").on("update", function(cmp) {
+    // Signal local pour mettre a jour le boolean caché des modificateurs de dégats
+    const degatChoice = signal(modifDegatsCmp.value())
+    effect(function() {
+        hasModifDegats.value(degatChoice() !== "0")
+    }, [degatChoice])
+
+    modifDegatsCmp.on("update", function(cmp) {
         degatChoice.set(cmp.value())
     })
 
-    entry.find("template_choice").on("update", function(cmp) {
+    // Signal local sur le libellé de longueur de l'arme
+    const longueurArme = signal(longueurCmp.text())
+    effect(function() {
+        longueurArmeInputCmp.value(longueurArme())
+    }, [longueurArme])
+
+    longueurCmp.on("update", function(cmp) {
+        longueurArme.set(cmp.text())
+    })
+
+    // Remplissage des champs avec le template
+    templateCmp.on("update", function(cmp) {
         if(cmp.value() !== "") {
             const arme = mapWeaponEntity(Tables.get("armes").get(cmp.value()))
-            entry.find("type_arme_choice").value(arme.type)
-            entry.find("nom_arme_input").value(arme.name)
-            entry.find("attr_arme_choice").value(arme.attr)
-            entry.find("competence_arme_choice").value(arme.comp)
-            entry.find("modif_eff_input").value(arme.modif_eff)
-            entry.find("modif_fac_input").value(arme.modif_fac)
-            entry.find("modif_degats_choice").value(arme.modif_degats)
+            typeArmeChoiceCmp.value(arme.type)
+            nomArme.value(arme.name)
+            attrArmeCmp.value(arme.attr)
+            compArmeCmp.value(arme.comp)
+            modifEffCmp.value(arme.modif_eff)
+            modifFacCmp.value(arme.modif_fac)
+            modifDegatsCmp.value(arme.modif_degats)
             if(arme.type === "cac") {
-                entry .find("longueur_arme_choice").value(arme.taille)
-                entry.find("nb_mains_input").value(arme.mains)
+                longueurCmp.value(arme.taille)
+                nbMainsCmp.value(arme.mains)
             } else {
-                entry.find("portee_input").value(arme.portee)
-                entry.find("recharge_input").value(arme.recharge)
+                porteeCmp.value(arme.portee)
+                rechargeCmp.value(arme.recharge)
             }
-            entry.find("degats_input").value(arme.degats)
-            entry.find("notes_input").value(arme.notes)
+            degatsCmp.value(arme.degats)
+            notesCmp.value(arme.notes)
         }
     })
 

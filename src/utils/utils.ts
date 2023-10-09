@@ -61,6 +61,23 @@ export function signal<T>(value: T): Signal<T> {
     return _signal;
 }
 
+export const editableLabel = function(editBtn: Component, label: Component, input: Component, labelContainer: Component, inputContainer: Component) {
+    editBtn.on("click", function() {
+        if(labelContainer.visible()) {
+            labelContainer.hide()
+            inputContainer.show()
+        } else {
+            labelContainer.show()
+            inputContainer.hide()
+        }
+    })
+    input.on("update", function(cmp) {
+        label.value(cmp.value())
+        labelContainer.show()
+        inputContainer.hide()
+    })
+}
+
 // Implémentation du pattern computed
 export const computed = function<T>(compute: () => T, dependencies: Signal<unknown>[] | Computed<unknown>[]): Computed<T> {
     const s = signal(compute());
@@ -82,6 +99,7 @@ export const effect = function(apply: () => void, dependencies: Signal<unknown>[
     }
 }
 
+// Réinitialise tout les modificateurs temporaires à 0
 export const resetModifiers = function(sheet: PavillonSheet) {
     Tables.get("attributs").each(function(attr) {
         const cmp = sheet.find(attr.id + "_val") as Component<number>
@@ -98,6 +116,7 @@ export const resetModifiers = function(sheet: PavillonSheet) {
     
 }
 
+// Fonctions de conversion des données des Tables
 export const mapCompetence = function(entity: CompetenceEntity): Competence {
     return {
         id: entity.id,
@@ -108,6 +127,44 @@ export const mapCompetence = function(entity: CompetenceEntity): Competence {
     }
 }
 
+export const mapSequelle = function(e: SequelleEntity): Sequelle {
+    return  {
+        min: parseInt(e.min),
+        max: parseInt(e.max),
+        short_description: e.short_description,
+        description: e.description,
+        effect: e.effect
+    }
+}
+
+export const mapWeaponEntity = function(e: WeaponEntity): Weapon {
+    return {
+        id: e.id,
+        attr: e.attr,
+        type: e.type,
+        modif_eff: parseInt(e.modif_eff),
+        modif_fac: parseInt(e.modif_fac),
+        portee: parseInt(e.portee),
+        degats: parseInt(e.degats),
+        recharge: e.recharge,
+        comp: e.comp,
+        modif_degats: e.modif_degats,
+        mains: parseInt(e.mains) as 1 | 2,
+        taille: e.taille,
+        name: e.name,
+        notes: e.notes
+    }
+}
+
+export const mapPeuple = function(e: PeupleEntity): Peuple {
+    return {
+        id: e.id,
+        name: e.name,
+        ind_afr: e.ind_afr === "true"
+    }
+}
+
+// Affichage rouge/vert quand on change les valeurs virtuelles
 export const setVirtualBg = function(cmp: Component<number>) {
     if(cmp.value() > cmp.rawValue()) {
         cmp.addClass("bg-success")
