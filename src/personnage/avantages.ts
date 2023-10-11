@@ -1,3 +1,4 @@
+
 export const setupAvantageEditEntry = function(type: "avantage" | "desavantage", defaultValue: string) {
     return function(entry: Component<Avantage>) {
         // Définition des composants

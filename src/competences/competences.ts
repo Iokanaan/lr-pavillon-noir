@@ -1,5 +1,6 @@
 import { typesComp } from "../globals"
-import { effect, mapCompetence, setVirtualBg, signal } from "../utils/utils"
+import { mapCompetence } from "../utils/mappers"
+import { effect, setVirtualBg, signal } from "../utils/utils"
 
 export const setupComps = function(sheet: PavillonSheet) {
 
@@ -72,7 +73,9 @@ export const setupComps = function(sheet: PavillonSheet) {
 
 }
 
-
+export const getOptionalCompType = function(comp: string) {
+    return ["arme_blanche", "arme_trait"].indexOf(comp) !== -1 ? "choice" : "input"
+}
 
 export const setupOptionalGroup = function(sheet: PavillonSheet, key: string, maxSlots: number, type: "input" | "choice") {
 
@@ -114,101 +117,22 @@ export const setupOptionalGroup = function(sheet: PavillonSheet, key: string, ma
   }, dependencies)
 }
 
-
-export const setupAttrSecondaires = function(sheet: PavillonSheet) {
-
-    sheet.find("chance_label").on("click", function(cmp) {
-        cmp.hide()
-        sheet.find("chance_facilite_row").show()
-    });
-
-    (sheet.find("chance_facilite_input") as Component<string>).on("update", function(cmp) {
-        if(/^[0-9]*$/.test(cmp.value())) {
-            new RollBuilder(sheet.raw()).expression("1d10 < " + (parseInt(cmp.value()) + sheet.chance())).roll()
-            sheet.find("chance_facilite_row").hide()
-            sheet.find("chance_facilite_input").value(null)
-            sheet.find("chance_label").show()
-        }
-    })
-
-    effect(function() {
-        sheet.find("chance_val").text(sheet.chance().toString())
-    }, [sheet.chance])
-
-    effect(function() {
-        sheet.find("initiative_val").text(sheet.initiative().toString())
-    }, [sheet.initiative])
-
-    each(sheet.modifiers, function(modSignal, key) {
-        effect(function() {
-            sheet.find(key + "_val").text(modSignal().toString())
-        }, [modSignal])
-    })
-
-    each(sheet.commandement, function(cmdSignal, key) {
-        effect(function() {
-            sheet.find(key + "_val").text(cmdSignal().toString())
-        }, [cmdSignal])
-    })
-}
-
-export const setupValeurMetier = function(sheet: PavillonSheet) {
-
-    const setDisplay = function(labelCmpId: string, valCmpId: string, subTextCmpId: string, profession: Profession | undefined) {
-        if(profession !== undefined) {
-            sheet.find(labelCmpId).value(profession.name)
-            sheet.find(subTextCmpId).value("(" + profession.attr_1 + " + " + profession.attr_2 + ") / 2")
-            sheet.find(subTextCmpId).show()
-            sheet.find(labelCmpId).show()
-            sheet.find(valCmpId).show()
-        } else {
-            sheet.find(labelCmpId).hide()
-            sheet.find(subTextCmpId).hide()
-            sheet.find(valCmpId).hide()
-        }
-    }
-
-    const setValue = function(valCmpId: string, value: number | undefined) {
-        if(value !== undefined) {
-            sheet.find(valCmpId).value(value.toString())
-        } else {
-            sheet.find(valCmpId).value("0")
-        }
-    }
-
-    effect(function() {
-        setDisplay( "valeur_poste_bord_label_1", "valeur_poste_bord_val_1", "poste_bord_1_subtext", sheet.posteBord.profession())
-    }, [sheet.posteBord.profession])
-
-    effect(function() {
-        setValue("valeur_poste_bord_val_1", sheet.posteBord.value())
-    }, [sheet.posteBord.value])
-
-    effect(function() {
-        setDisplay("valeur_metier_label_1", "valeur_metier_val_1", "metier_1_subtext", sheet.professions[0].profession())
-    }, [sheet.professions[0].profession])
-
-    effect(function() {
-        setValue("valeur_metier_val_1", sheet.professions[0].value())
-    }, [sheet.professions[0].value])
-
-    effect(function() {
-        setDisplay("valeur_metier_label_2", "valeur_metier_val_2", "metier_2_subtext", sheet.professions[1].profession())
-    }, [sheet.professions[1].profession])
-
-    effect(function() {
-        setValue("valeur_metier_val_2", sheet.professions[1].value())
-    }, [sheet.professions[1].value])
-}
-
-
+// Paramétrage des compétences dynamiques
 const setupOptionalRow = function(sheet: PavillonSheet, key: string, type: "input" | "choice", num: number) {
 
     const row = key + "_" + num as CompetenceEnum
     const nameSignal = sheet.comp[row].actualName
+    // Uniquement si la compétence est dynamique
     if(nameSignal !== undefined) {
         nameSignal.set(sheet.find(row + "_input").value() as string)
         effect(function() {
+            sheet.find(row + "_input").hide()
+            if(type === "choice") {
+                sheet.find(row + "_choice").hide()
+            }
+            sheet.find(row + "_label").value(nameSignal())
+            sheet.find(row + "_label").show()
+            sheet.find(row +  "_edit").show()
             if(nameSignal() !== "") {
                 sheet.find(row + "_label").show()
                 sheet.find(row + "_edit").show()
@@ -228,8 +152,10 @@ const setupOptionalRow = function(sheet: PavillonSheet, key: string, type: "inpu
             }
         }, [nameSignal])
 
+        // Signal local pour savoir si la compétence est visible
         const visible = signal(nameSignal() !== undefined && nameSignal() !== "")
 
+        // Gestion du clic sur le bouton edit
         sheet.find(row + "_edit").on("click", function() {
             sheet.find(row + "_label").hide()
             sheet.find(row + "_edit").hide()
@@ -240,17 +166,13 @@ const setupOptionalRow = function(sheet: PavillonSheet, key: string, type: "inpu
             }
         })
 
+        // Sur la mise à jour de l'input, on cache le mode édition, on affiche le label si défini
         sheet.find(row + "_input").on("update", function(cmp) {
-            cmp.hide()
-            if(type === "choice") {
-                sheet.find(row + "_choice").hide()
-            }
-            sheet.find(row + "_label").show()
-            sheet.find(row +  "_edit").show()
             nameSignal.set(cmp.value() as string)
             visible.set(cmp.value() !== "" && cmp.value() !== undefined)
         })
 
+        // En mode choice, on met a jour l'input associé
         if(type === "choice") {
             sheet.find(row + "_choice").on("update", function(cmp) {
                 sheet.find(row + "_input").value(cmp.text())

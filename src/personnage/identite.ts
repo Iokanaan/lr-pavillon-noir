@@ -1,4 +1,5 @@
-import { effect, mapPeuple, signal } from "../utils/utils"
+import { mapPeuple } from "../utils/mappers"
+import { effect, signal } from "../utils/utils"
 
 
 export const setupTitre = function(sheet: PavillonSheet) {

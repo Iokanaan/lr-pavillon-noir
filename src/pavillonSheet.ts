@@ -1,5 +1,6 @@
 import { typesComp } from "./globals"
-import { computed, intToWord, mapCompetence, signal } from "./utils/utils"
+import { mapCompetence } from "./utils/mappers"
+import { computed, intToWord, signal } from "./utils/utils"
 
 export const pavillonSheet = function(sheet: Sheet) {
 

@@ -1,5 +1,6 @@
 import { globalSheets, optionalCompSlots } from "../globals"
-import { computed, effect, intToWord, mapWeaponEntity, signal } from "../utils/utils"
+import { mapWeaponEntity } from "../utils/mappers"
+import { computed, effect, intToWord, signal } from "../utils/utils"
 
 
 // Converti les competences d'arme en choix pour repeater

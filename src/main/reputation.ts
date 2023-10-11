@@ -7,7 +7,6 @@ export const reputationListener = function(sheet: PavillonSheet, typeRep: "glo" 
         sheet.reputation[typeRep].score.set(cmp.value())
     });
 
-
     // Affichage du niveau du nombre requis
     effect(function() {
         sheet.find(typeRep + "_lvl").value(sheet.reputation[typeRep].level())

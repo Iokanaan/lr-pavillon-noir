@@ -1,41 +1,48 @@
 import { pavillonSheet } from "./pavillonSheet"
-import { setupAttrSecondaires, setupComps, setupOptionalGroup, setupValeurMetier } from "./competences/competences"
-import { setupAttribut } from "./attributs/attributs"
-import { setupBaseDescription, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupReligion, setupTitre } from "./bio/bio"
-import { reputationListener } from "./reputation/reputation"
+import { getOptionalCompType, setupComps, setupOptionalGroup } from "./competences/competences"
+import { setupAttribut } from "./main/attributs"
+import { setupBaseDescription, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupReligion, setupTitre } from "./personnage/identite"
+import { reputationListener } from "./main/reputation"
 import { setupRepeater } from "./utils/repeaters"
 import { setupDisplayedBlessures, setupSequelles } from "./combat/blessures"
 import { setupWeaponEditEntry, setupWeaponViewEntry } from "./combat/armes"
 import { globalSheets, optionalCompSlots } from "./globals"
-import { getSequelleData, rollResultHandler } from "./roll/rollHandler"
-import { setupAvantageDisplayEntity, setupAvantageEditEntry } from "./bio/bioDetails"
 import { editableLabel } from "./utils/utils"
+import { setupAvantageDisplayEntity, setupAvantageEditEntry } from "./personnage/avantages"
+import { setupAttrSecondaires, setupValeurMetier } from "./competences/attibutsSecondaires"
+import { dropSequelle } from "./roll/dropHandler"
+import { resultCallback } from "./roll/rollHandler"
 
+// Gestion des résultats de dés
+initRoll = function(result: DiceResult, callback: DiceResultCallback) {
+    callback('DiceResult', resultCallback(result))
+}
+
+// Gestion des dépots de dés
+dropDice = function(result, to) {
+    const tags = result.total !== undefined ? result.tags : result._raw._tags as string[]
+    const total = result.total !== undefined ? result.total : result._raw._raw.total as number
+    if(tags.indexOf('sequelle') !== -1) {
+        dropSequelle(to, total, tags)
+        return
+    }
+}
 
 init = function(sheet) {
     if(sheet.id() === "main") {
-        
-        
         const pSheet = pavillonSheet(sheet)
         globalSheets[sheet.getSheetId()] = pSheet
- 
-        try {
 
+        // Attributs et compétences
+        try {
             Tables.get("attributs").each(function(attr: AttributEntity) {
                 setupAttribut(pSheet, attr)
             })
             setupValeurMetier(pSheet)
             setupComps(pSheet)
-
             each(optionalCompSlots, function(val, key) {
-                if(key === "arme_blanche" || key === "arme_trait") {
-                    setupOptionalGroup(pSheet, key, val, "choice")
-                } else {
-                    setupOptionalGroup(pSheet, key, val, "input")
-                }
+                setupOptionalGroup(pSheet, key, val, getOptionalCompType(key))
             })
-
-            pSheet.find("character_name").text(sheet.properName())
             setupAttrSecondaires(pSheet)
         } catch(e) {
             log("ERREUR: Échec de l'initilisation des compétences et caractéristiques")
@@ -46,7 +53,10 @@ init = function(sheet) {
         } catch(e) {
             log("ERREUR: Échec de l'initialisation de la réputation")
         }
+
+        // Volet personnage
         try {
+            pSheet.find("character_name").text(sheet.properName())
             setupBaseDescription(pSheet, "taille")
             setupBaseDescription(pSheet, "poids")
             setupBaseDescription(pSheet, "age")
@@ -66,6 +76,7 @@ init = function(sheet) {
             log("ERREUR: Échec de l'initialisation des informations personnelles")
         }
 
+        // Combat & sequelles
         try {
             setupSequelles(pSheet)
             setupDisplayedBlessures(pSheet)
@@ -76,18 +87,8 @@ init = function(sheet) {
     }  
 }
 
-initRoll = rollResultHandler
 
-dropDice = function(result, to) {
-    const tags = result.total !== undefined ? result.tags : result._raw._tags
-    const total = result.total !== undefined ? result.total : result._raw._raw.total 
-    if(tags.indexOf('sequelle') !== -1) {
-        const sequelle = getSequelleData(total, tags)
-        const allSequelles = to.get("sequelles_repeater").value() 
-        allSequelles[Math.random().toString().slice(2).substring(0, 10)] = sequelle
-        to.setData({"sequelles_repeater": allSequelles})
-    }
-}
+
 
 getCriticalHits = function(result) {
     return {
