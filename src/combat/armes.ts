@@ -1,4 +1,5 @@
 import { globalSheets, optionalCompSlots } from "../globals"
+import { hasMalusArmeAFeu } from "../main/attributs"
 import { mapWeaponEntity } from "../utils/mappers"
 import { computed, effect, intToWord, signal } from "../utils/utils"
 
@@ -76,6 +77,7 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         compModifier
     ])
 
+    log("computed damage")
     const damageModifier = signal(0)
     const virtualDamage = computed(function() {
         let bonus = 0
@@ -83,6 +85,7 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
             bonus += sheet.modifiers[entry.value().modif_degats_choice as Modificateur]()
         }
         const virtualVal = entry.value().degats_input + bonus + damageModifier() 
+        log(virtualVal)
         entry.find("roll_degats").value(virtualVal)
         setVirtualColor(entry.find("roll_degats"), entry.value().degats_input + bonus)
         return virtualVal
@@ -143,9 +146,14 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
     entry.find("weapon_title").on("click", function(cmp) {
         let expression = ""
         if(virtualComp() !== 0) {
-        expression += virtualComp() + "d10 "
+            expression += virtualComp() + "d10 "
         } else {
-            expression += "1d12 "
+            if(hasMalusArmeAFeu(sheet, entry.value().competence_arme_choice)) {
+                expression += "1d20 "
+            } else {
+                expression += "1d12 "
+            }
+
         }
         expression += "<={1:2} " + virtualAttr()
         expression = "(" + expression + ")"

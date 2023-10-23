@@ -11,10 +11,11 @@ export const pavillonSheet = function(sheet: Sheet) {
         entryStates: {}
     }
 
+    // Caractéristiques / compétences
     const compSignals: any = {}
     typesComp.forEach(function(typeComp) {
         (Tables.get(typeComp) as Table<CompetenceEntity>).each(function(e) {
-            const c = mapCompetence(e)
+            const c = mapCompetence(e, typeComp)
             if(!c.optional) {
                 compSignals[c.id] = { 
                     value: signal(sheet.get(c.id + "_val").value())
@@ -33,10 +34,10 @@ export const pavillonSheet = function(sheet: Sheet) {
         attrSignals[a.id] = signal(sheet.get(a.id + "_val").value())
     })
 
-    // Caractéristiques / compétences
     _pSheet.selectedComp = signal(undefined)
     _pSheet.attr = attrSignals
     _pSheet.comp = compSignals;
+
 
     // Détails personnels
     _pSheet.origine = signal({
@@ -153,8 +154,44 @@ export const pavillonSheet = function(sheet: Sheet) {
             return 2
         }, [_pSheet.attr['ADR']])
     }
-    
+
+
+    // Blessures
+    _pSheet.blessures = buildBlessures(sheet)
+
+    // Arcanes
+    _pSheet.voies = []
+    _pSheet.typeArcane = signal(sheet.get("type_arcarne"))
+    for(let i=0; i<1; i++) {
+        _pSheet.voies[i] = buildVoie(sheet, i+1)
+    }
+     
+    log(_pSheet.blessures)
     return _pSheet as PavillonSheet
+}
+
+const buildVoie = function(sheet: Sheet, num: number) {
+    const voie = {} as any
+    voie.foi = signal(sheet.get("foi_" + num).value())
+    voie.rangFoi = computed(function() {
+        if(voie.foi() <= 0) {
+            return 1
+        }
+        if(voie.foi() <= 1) {
+            return 2
+        }
+        if(voie.foi() <= 3) {
+            return 3
+        }
+        if(voie.foi() <= 6) {
+            return 4
+        }
+        if(voie.foi() <= 8) {
+            return 5
+        }
+        return 6
+    }, [voie.foi])
+    return voie
 }
 
 const buildProfession = function(_pSheet: {"attr": Record<AttributEnum, Signal<number>>}, sheet: Sheet, professionId: string, num: number): ProfessionHolder {
@@ -223,4 +260,135 @@ const reputationLevel = function(reputationScore: Signal<number>) {
         }
         return 10
     }, [reputationScore])
+}
+
+const buildBlessures = function(sheet: Sheet) {
+    const blessures = {
+        localisation: {
+            "tete": { detail : buildDetailBlessures(sheet, "tete") },
+            "torse": { detail : buildDetailBlessures(sheet, "torse") },
+            "bd": { detail : buildDetailBlessures(sheet, "bd") },
+            "bg": { detail : buildDetailBlessures(sheet, "bg") },
+            "jd": { detail : buildDetailBlessures(sheet, "jd") },
+            "jg": { detail : buildDetailBlessures(sheet, "jg") }
+        }
+    }  as any
+    each(blessures.localisation as Record<LocalisationShortEnum, { detail: Record<BlessureEnum, Signal<boolean>[]> }>, function(d, l) {
+        const loc = l as LocalisationShortEnum;
+        (blessures.localisation[loc] as any).consolide = computed(function() {
+            if(d.detail.mort[0]()) {
+                return "mort"
+            }
+            if(d.detail.coma[0]() || d.detail.coma[1]()) {
+                return "coma"
+            }
+            if(d.detail.critique[0]() || d.detail.critique[1]()) {
+                return "critique"
+            }
+            if(d.detail.grave[0]() || d.detail.grave[1]()) {
+                return "grave"
+            }
+            if(d.detail.serieuse[0]() || d.detail.serieuse[1]()) {
+                return "serieuse"
+            }
+            if(d.detail.legere[0]() || d.detail.legere[1]()) {
+                return "legere"
+            }
+            return "aucune"
+        }, [
+            d.detail.legere[0],
+            d.detail.legere[1],
+            d.detail.serieuse[0],
+            d.detail.serieuse[1],
+            d.detail.grave[0],
+            d.detail.grave[1],
+            d.detail.critique[0],
+            d.detail.critique[1],
+            d.detail.coma[0],
+            d.detail.coma[1],
+            d.detail.mort[0]
+        ])
+    })
+    log(blessures.tete)
+    blessures.general = {}
+    blessures.general.etat = computed(function() {
+        const blessuresByLevel = {
+            aucune:0,
+            legere:0,
+            serieuse:0,
+            grave:0,
+            critique:0,
+            coma:0,
+            mort:0
+        }
+        log("gy")
+        log(blessures)
+        each(blessures.localisation, function(blessure: { "consolide": Computed<BlessureEnum>}) {
+            log(blessure)
+            blessuresByLevel[blessure.consolide()]++
+        })
+        log("aa")
+        log(blessuresByLevel)
+        if(blessuresByLevel.mort > 0 || blessuresByLevel.coma > 1) {
+            return "mort"
+        }
+        if(blessuresByLevel.coma > 0 || blessuresByLevel.critique > 1) {
+            return "coma"
+        }
+        if(blessuresByLevel.critique > 0 || blessuresByLevel.grave > 1) {
+            return "critique"
+        }
+        if(blessuresByLevel.grave > 0) {
+            return "grave"
+        }
+        if(blessuresByLevel.serieuse > 0) {
+            return "serieuse"
+        }
+        if(blessuresByLevel.legere > 0) {
+            log("legeere")
+            return "legere"
+        }
+        return "aucune"
+    }, [
+       blessures.localisation.tete.consolide,
+       blessures.localisation.torse.consolide,
+       blessures.localisation.bg.consolide,
+       blessures.localisation.bd.consolide,
+       blessures.localisation.jg.consolide,
+       blessures.localisation.jd.consolide, 
+    ])
+
+    blessures.general.malus = computed(function() {
+        switch(blessures.general.etat()) {
+            case "critique":
+                return 4
+            case "grave":
+                return 2
+            case "serieuse":
+                return 1
+        }
+        return 0
+    }, [blessures.general.etat])
+
+    return blessures as {
+        localisation: Record<LocalisationShortEnum, {
+            detail: Record<BlessureEnum, Signal<boolean>[]>,
+            consolide: Computed<BlessureEnum>
+        }>,
+        general: { 
+            etat: Computed<BlessureEnum>,
+            malus: Computed<number>   
+        }
+    } 
+}
+
+const buildDetailBlessures = function(sheet: Sheet, loc: LocalisationShortEnum) {
+    return {
+        legere: [signal(sheet.get("blessure_" + loc + "_7").value()as boolean), signal(sheet.get("blessure_" + loc + "_8").value()as boolean)],
+        serieuse: [signal(sheet.get("blessure_" + loc + "_6").value()as boolean), signal(sheet.get("blessure_" + loc + "_9").value()as boolean)],
+        grave: [signal(sheet.get("blessure_" + loc + "_5").value()as boolean), signal(sheet.get("blessure_" + loc + "_10").value()as boolean)],
+        critique: [signal(sheet.get("blessure_" + loc + "_4").value()as boolean), signal(sheet.get("blessure_" + loc + "_11").value()as boolean)],
+        coma: [signal(sheet.get("blessure_" + loc + "_3").value()as boolean), signal(sheet.get("blessure_" + loc + "_2").value()as boolean)],
+        mort: [signal(sheet.get("blessure_" + loc + "_1").value()as boolean)]
+    }
 }

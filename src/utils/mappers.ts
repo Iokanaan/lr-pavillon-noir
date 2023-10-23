@@ -1,12 +1,13 @@
 
 // Fonctions de conversion des données des Tables
-export const mapCompetence = function(entity: CompetenceEntity): Competence {
+export const mapCompetence = function(entity: CompetenceEntity, cat: string): Competence {
     return {
         id: entity.id,
         name: entity.name,
         cc: entity.cc === "true",
         metier: entity.metier === "true",
-        optional: entity.optional === "true"
+        optional: entity.optional === "true",
+        category: cat
     }
 }
 
@@ -36,6 +37,14 @@ export const mapWeaponEntity = function(e: WeaponEntity): Weapon {
         taille: e.taille,
         name: e.name,
         notes: e.notes
+    }
+}
+
+export const mapLocalisation = function(e: LocalisationEntity): Localisation {
+    return {
+        id: parseInt(e.id),
+        name: e.name,
+        code: e.code
     }
 }
 

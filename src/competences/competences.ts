@@ -63,7 +63,7 @@ export const setupComps = function(sheet: PavillonSheet) {
     // Boucler pour exécuter tous les fonctions précédentes sur toutes les compéteces
     typesComp.forEach(function(typeComp) {
         Tables.get(typeComp).each(function(e: CompetenceEntity) { 
-            const comp = mapCompetence(e)
+            const comp = mapCompetence(e, typeComp)
             setSelectedComp(comp)
             setModifiers(sheet, comp)
             setValUpdateListener(comp)

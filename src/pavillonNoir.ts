@@ -12,6 +12,7 @@ import { setupAvantageDisplayEntity, setupAvantageEditEntry } from "./personnage
 import { setupAttrSecondaires, setupValeurMetier } from "./competences/attibutsSecondaires"
 import { dropSequelle } from "./roll/dropHandler"
 import { resultCallback } from "./roll/rollHandler"
+import { ritesDisplayEntry } from "./arcanes/rites"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -84,11 +85,11 @@ init = function(sheet) {
         } catch(e) {
             log("ERREUR: Échec de l'onglet combat")
         }
+
+        setupRepeater(pSheet, "rites_repeater", null, ritesDisplayEntry, null)
+        setupRepeater(pSheet, "actes_foi_repeater", null, ritesDisplayEntry, null)
     }  
 }
-
-
-
 
 getCriticalHits = function(result) {
     return {

@@ -22,6 +22,11 @@ declare global {
         find(id: string): Component<unknown> | ChoiceComponent<unknown>,
         stringId(): string
     }
+    
+    type Voie = {
+        rangFoi: computed<string>,
+        foi: Signal<number>
+    }
 
     type PavillonSheet = {
         entryStates: Record<string, Record<string, RepeaterState | undefined>>,
@@ -49,7 +54,19 @@ declare global {
         origineSociale: Signal<string>,
         jeunesse: Signal<string>[],
         avantages: Signal<Record<string, Avantage>>,
-        desavantages: Signal<Record<string, Avantage>>
+        desavantages: Signal<Record<string, Avantage>>,
+        blessures: {
+            localisation: Record<LocalisationShortEnum, {
+                detail: Record<BlessureEnum, Signal<boolean>[]>,
+                consolide: Computed<BlessureEnum>
+            }>,
+            general: { 
+                etat: Computed<BlessureEnum>,
+                malus: Computed<number>   
+            }
+        },
+        typeArcane: Signal<"communion" | "possession">,
+        voies: Voie[]
     } & ExtendedSheet<CharData>
 
     type Competence = {
@@ -58,6 +75,7 @@ declare global {
         cc: boolean,
         metier: boolean,
         optional: boolean
+        category: string
     }
 
     type CompetenceEntity = {
@@ -66,6 +84,11 @@ declare global {
         cc: string,
         metier: string,
         optional: string
+    }
+
+    type RiteData = {
+        nom: string,
+        description: string
     }
 
     type Attribut = {
@@ -225,6 +248,22 @@ declare global {
         localisation?: string
     }
 
+    type LocalisationEntity = {
+        id: string,
+        name: string,
+        code: LocalisationEnum
+    }
+
+    type Localisation = {
+        id: number,
+        name: string,
+        code: LocalisationEnum
+    }
+
+    type LocalisationEnum = "tete" | "bras_droit" | "bras_gauche" | "torse" | "jambe_droite" | "jambe_gauche"
+    type BlessureEnum = "legere" | "serieuse" | "grave" | "critique" | "coma" | "mort" | "aucune"
+    type LocalisationShortEnum = "tete"|"torse"|"bg"|"bd"|"jd"|"jg"
+    
     type CompetenceEnum = 
         "balistique" |
         "cartographie" |

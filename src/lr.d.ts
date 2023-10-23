@@ -37,6 +37,7 @@ declare global {
         get(elem: 'glo' | 'inf'): Table<ReputationEntity>
         get(elem: 'armes'): Table<WeaponEntity>
         get(elem: 'sequelles_tete' | 'sequelles_torse' | 'sequelles_jambe' | 'sequelles_bras'): Table<SequelleEntity>
+        get(elem: 'localisations'): Table<LocalisationEntity>
         get(id: string): Table
     }
     
