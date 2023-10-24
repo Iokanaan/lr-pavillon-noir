@@ -161,7 +161,7 @@ export const pavillonSheet = function(sheet: Sheet) {
 
     // Arcanes
     _pSheet.voies = []
-    _pSheet.typeArcane = signal(sheet.get("type_arcarne"))
+    _pSheet.typeArcane = signal(sheet.get("type_arcarne").value())
     _pSheet.faveurs = computed(function() {
         return Math.max(_pSheet.chance() - 5, 0)
     }, [_pSheet.chance])
@@ -176,22 +176,22 @@ const buildVoie = function(sheet: Sheet, num: number) {
     const voie = {} as any
     voie.foi = signal(sheet.get("foi_" + num).value())
     voie.rangFoi = computed(function() {
-        if(voie.foi() <= 0) {
-            return 1
+        if(voie.foi() >= 10) {
+            return 6
         }
-        if(voie.foi() <= 1) {
-            return 2
-        }
-        if(voie.foi() <= 3) {
-            return 3
-        }
-        if(voie.foi() <= 6) {
-            return 4
-        }
-        if(voie.foi() <= 8) {
+        if(voie.foi() >= 8) {
             return 5
         }
-        return 6
+        if(voie.foi() >= 6) {
+            return 4
+        }
+        if(voie.foi() >= 3) {
+            return 3
+        }
+        if(voie.foi() >= 1) {
+            return 2
+        }
+        return 1
     }, [voie.foi])
     return voie
 }
