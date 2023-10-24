@@ -27,6 +27,3 @@ export const pouvoirsSacres = function(sheet: PavillonSheet, num: number) {
 
 }
 
-const setupPouvoirDisplayEntry() {
-
-}
