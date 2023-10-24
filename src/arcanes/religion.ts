@@ -3,6 +3,7 @@ import { effect } from "../utils/utils"
 export const setupArcanes = function(sheet: PavillonSheet) {
     effect(function() {
         sheet.find("religion_arcanes").value(sheet.religion())
+        sheet.find("arcanes_comp_val").value(sheet.religion())
     }, [sheet.religion])
     sheet.find("type_arcarne").on("update", function(cmp) {
         sheet.typeArcane.set(cmp.value() as "communion" | "possession")
@@ -22,14 +23,7 @@ export const setupArcanes = function(sheet: PavillonSheet) {
         cmp.hide()
         sheet.find("nom_arcanes_val").show()
     })
-}
-
-export const setupArcaneName = function(sheet : PavillonSheet) {
-
-}
-
-export const setupFaveur = function(sheet: PavillonSheet) {
     effect(function() {
-
+        sheet.find("arcanes_faveurs").value(sheet.faveurs())
     }, [sheet.faveurs])
 }

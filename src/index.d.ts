@@ -66,6 +66,7 @@ declare global {
             }
         },
         typeArcane: Signal<"communion" | "possession">,
+        faveurs: Computed<number>,
         voies: Voie[]
     } & ExtendedSheet<CharData>
 

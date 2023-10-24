@@ -163,13 +163,12 @@ export const pavillonSheet = function(sheet: Sheet) {
     _pSheet.voies = []
     _pSheet.typeArcane = signal(sheet.get("type_arcarne"))
     _pSheet.faveurs = computed(function() {
-        return _pSheet.chance() - 5
+        return Math.max(_pSheet.chance() - 5, 0)
     }, [_pSheet.chance])
     for(let i=0; i<1; i++) {
         _pSheet.voies[i] = buildVoie(sheet, i+1)
     }
-     
-    log(_pSheet.blessures)
+
     return _pSheet as PavillonSheet
 }
 
@@ -312,7 +311,6 @@ const buildBlessures = function(sheet: Sheet) {
             d.detail.mort[0]
         ])
     })
-    log(blessures.tete)
     blessures.general = {}
     blessures.general.etat = computed(function() {
         const blessuresByLevel = {
@@ -324,14 +322,10 @@ const buildBlessures = function(sheet: Sheet) {
             coma:0,
             mort:0
         }
-        log("gy")
-        log(blessures)
         each(blessures.localisation, function(blessure: { "consolide": Computed<BlessureEnum>}) {
             log(blessure)
             blessuresByLevel[blessure.consolide()]++
         })
-        log("aa")
-        log(blessuresByLevel)
         if(blessuresByLevel.mort > 0 || blessuresByLevel.coma > 1) {
             return "mort"
         }
@@ -348,7 +342,6 @@ const buildBlessures = function(sheet: Sheet) {
             return "serieuse"
         }
         if(blessuresByLevel.legere > 0) {
-            log("legeere")
             return "legere"
         }
         return "aucune"
