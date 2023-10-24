@@ -13,6 +13,7 @@ import { setupAttrSecondaires, setupValeurMetier } from "./competences/attibutsS
 import { dropSequelle } from "./roll/dropHandler"
 import { resultCallback } from "./roll/rollHandler"
 import { ritesDisplayEntry } from "./arcanes/rites"
+import { setupArcaneName, setupReligionArcane } from "./arcanes/religion"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -85,6 +86,10 @@ init = function(sheet) {
         } catch(e) {
             log("ERREUR: Échec de l'onglet combat")
         }
+
+        // Arcanes
+        setupArcaneName(pSheet)
+        setupReligionArcane(pSheet)
 
         setupRepeater(pSheet, "rites_repeater", null, ritesDisplayEntry, null)
         setupRepeater(pSheet, "actes_foi_repeater", null, ritesDisplayEntry, null)

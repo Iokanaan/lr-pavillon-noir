@@ -1,3 +1,5 @@
+import { effect } from "../utils/utils"
+
 export const pouvoirsSacres = function(sheet: PavillonSheet) {
     (sheet.find("foi_1") as Component<number>).on("update", function(cmp) {
         sheet.voies[0].foi.set(cmp.value())

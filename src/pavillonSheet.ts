@@ -162,6 +162,9 @@ export const pavillonSheet = function(sheet: Sheet) {
     // Arcanes
     _pSheet.voies = []
     _pSheet.typeArcane = signal(sheet.get("type_arcarne"))
+    _pSheet.faveurs = computed(function() {
+        return _pSheet.chance() - 5
+    }, [_pSheet.chance])
     for(let i=0; i<1; i++) {
         _pSheet.voies[i] = buildVoie(sheet, i+1)
     }
