@@ -23,7 +23,32 @@ export const pouvoirsSacres = function(sheet: PavillonSheet, num: number) {
         }
     }, [sheet.voies[num - 1].rangFoi])
 
-    setupRepeater(sheet, "arcanes_pouvoirs_" + num, null, null, null)
+    setupRepeater(sheet, "arcanes_pouvoirs_" + num, null, setupPouvoirDisplayEntry, null)
 
+    sheet.find("voie_" + num).on("click", function(cmp) {
+        sheet.find("voie_" + num + "_input").show()
+        cmp.hide()
+    })
+
+    sheet.find("voie_" + num + "_input").on("update", function(cmp) {
+        sheet.find("voie_" + num).show()
+        cmp.hide()
+        sheet.find("voie_" + num).value(cmp.value())
+    })
+
+}
+
+const setupPouvoirDisplayEntry = function(entry: Component) {
+    entry.find("compulsions_row").hide()
+    entry.find("visions_row").hide()
+    entry.find("display_detail").on("click", function() {
+        if(entry.find("compulsions_row").visible()) {
+            entry.find("compulsions_row").hide()
+            entry.find("visions_row").hide()
+        } else {
+            entry.find("compulsions_row").show()
+            entry.find("visions_row").show()
+        }
+    })
 }
 

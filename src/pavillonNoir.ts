@@ -94,8 +94,8 @@ init = function(sheet) {
             pouvoirsSacres(pSheet, i)
         }
 
-        //setupRepeater(pSheet, "rites_repeater", null, ritesDisplayEntry, null)
-        //setupRepeater(pSheet, "actes_foi_repeater", null, ritesDisplayEntry, null)
+        setupRepeater(pSheet, "rites_repeater", null, ritesDisplayEntry, null)
+        setupRepeater(pSheet, "actes_foi_repeater", null, ritesDisplayEntry, null)
         
     }  
 }
