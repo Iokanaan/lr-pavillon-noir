@@ -353,14 +353,13 @@ export const setupProfession = function(sheet: PavillonSheet, typeMetier: "profe
     const professionByType: Record<string, ProfessionEntity[]> = {};
     
     // Construction du tableau des métiers groupés par type
-    log("iterate metiers");
     (Tables.get("types_" + metierTable) as Table<ProfessionEntity>).each(function(val) {
         professionByType[val.id] = []
     });
     Tables.get(metierTable).each(function(val) {
         professionByType[val.type].push(val)
     });
-    log("iterate done");
+
     // Initialisation de chaque slot
     for(let i=1; i<=qte; i++) {
         setupSingleProfession(sheet, professionByType, typeMetier, i)

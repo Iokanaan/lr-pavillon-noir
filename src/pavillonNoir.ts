@@ -15,6 +15,7 @@ import { resultCallback } from "./roll/rollHandler"
 import { ritesDisplayEntry } from "./arcanes/rites"
 import { setupArcanes } from "./arcanes/religion"
 import { pouvoirsSacres } from "./arcanes/voies"
+import { setupCompEscrimeEditEntry } from "./escrime/bretteur"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -93,10 +94,12 @@ init = function(sheet) {
         for(let i=1;i<=1;i++) {
             pouvoirsSacres(pSheet, i)
         }
-
         setupRepeater(pSheet, "rites_repeater", null, ritesDisplayEntry, null)
         setupRepeater(pSheet, "actes_foi_repeater", null, ritesDisplayEntry, null)
         
+        // Escrime
+        setupRepeater(pSheet, "escrime_repeater", setupCompEscrimeEditEntry, null, null)
+
     }  
 }
 

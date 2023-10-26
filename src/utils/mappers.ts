@@ -55,3 +55,15 @@ export const mapPeuple = function(e: PeupleEntity): Peuple {
         ind_afr: e.ind_afr === "true"
     }
 }
+
+export const mapEscrime = function(e: EscrimeEntity): Escrime {
+    const opp: number[] = []
+    e.opportunites.split(';').forEach(function(str) {
+        opp.push(parseInt(str))
+    })
+    return {
+        id: e.id,
+        name: e.name,
+        opportunites: opp
+    }
+}

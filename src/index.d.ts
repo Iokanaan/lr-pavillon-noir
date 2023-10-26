@@ -173,6 +173,39 @@ declare global {
         ind_afr: boolean
     }
 
+    type EscrimeEntity = {
+        id: string,
+        name: string,
+        opportunites: string
+    }
+
+    type Escrime = {
+        id: string,
+        name: string,
+        opportunites: number[]
+    }
+
+    type ManoeuvreEntity = {
+        id: string,
+        name: string,
+    }
+
+    type Manoeuvre = {
+        id: string,
+        name: string,
+    }
+
+    type EscrimeData = {
+        nom: string,
+        manoeuvres: string,
+        off_1: number,
+        off_2: number,
+        off_3: number,
+        off_4: number,
+        off_5: number,
+        predilection: boolean
+    }
+
     type TypeArme = "cac" | "feu" | "jet" | "trait"
     type AttributEnum = "ADR" | "ADA" | "RES" | "FOR" | "ERU" | "PER" | "EXP" | "CHA" | "POU"
     type Modificateur = "MDFor" | "MDAdr"
