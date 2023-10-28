@@ -198,11 +198,16 @@ declare global {
     type EscrimeData = {
         nom: string,
         manoeuvres: string,
-        off_1: number,
-        off_2: number,
-        off_3: number,
-        off_4: number,
-        off_5: number,
+        off_1: boolean,
+        off_2: boolean,
+        off_3: boolean,
+        off_4: boolean,
+        off_5: boolean,
+        off_6: boolean,
+        off_7: boolean,
+        off_8: boolean,
+        off_9: boolean,
+        off_10: boolean,
         predilection: boolean
     }
 

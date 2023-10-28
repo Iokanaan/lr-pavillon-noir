@@ -15,7 +15,8 @@ import { resultCallback } from "./roll/rollHandler"
 import { ritesDisplayEntry } from "./arcanes/rites"
 import { setupArcanes } from "./arcanes/religion"
 import { pouvoirsSacres } from "./arcanes/voies"
-import { setupCompEscrimeEditEntry } from "./escrime/bretteur"
+import { setupBretteurName, setupCompEscrimeDisplayEntry, setupCompEscrimeEditEntry } from "./escrime/bretteur"
+import { setupSequellesEditEntry } from "./personnage/sequelles"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -76,6 +77,7 @@ init = function(sheet) {
             setupRepeater(pSheet, "faiblesse_repeater", setupAvantageEditEntry("desavantage", "borgne"), setupAvantageDisplayEntity(pSheet, "avantages"), null)
             editableLabel(pSheet.find("history_title"), pSheet.find("history_txt"), pSheet.find("history_input"), pSheet.find("history_col"), pSheet.find("history_input_col"))
             editableLabel(pSheet.find("contact_title"), pSheet.find("contact_txt"), pSheet.find("contact_input"), pSheet.find("contact_col"), pSheet.find("contact_input_col"))
+            setupRepeater(pSheet, "sequelles_repeater", setupSequellesEditEntry, null, null)
         } catch(e) {
             log("ERREUR: Échec de l'initialisation des informations personnelles")
         }
@@ -98,7 +100,8 @@ init = function(sheet) {
         setupRepeater(pSheet, "actes_foi_repeater", null, ritesDisplayEntry, null)
         
         // Escrime
-        setupRepeater(pSheet, "escrime_repeater", setupCompEscrimeEditEntry, null, null)
+        setupRepeater(pSheet, "escrime_repeater", setupCompEscrimeEditEntry, setupCompEscrimeDisplayEntry, null)
+        setupBretteurName(pSheet)
 
     }  
 }
