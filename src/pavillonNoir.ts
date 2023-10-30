@@ -17,6 +17,8 @@ import { setupArcanes } from "./arcanes/religion"
 import { pouvoirsSacres } from "./arcanes/voies"
 import { setupBretteurName, setupCompEscrimeDisplayEntry, setupCompEscrimeEditEntry } from "./escrime/bretteur"
 import { setupSequellesEditEntry } from "./personnage/sequelles"
+import { setupManoeuvreDisplayEntry, setupManoeuvreEditEntry } from "./escrime/manoeuvres"
+import { setupTraiteDisplayEntry, setupTraiteEditEntry } from "./escrime/taites"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -102,7 +104,8 @@ init = function(sheet) {
         // Escrime
         setupRepeater(pSheet, "escrime_repeater", setupCompEscrimeEditEntry, setupCompEscrimeDisplayEntry, null)
         setupBretteurName(pSheet)
-
+        setupRepeater(pSheet, "manoeuvres_repeater", setupManoeuvreEditEntry, setupManoeuvreDisplayEntry, null)
+        setupRepeater(pSheet, "traites_repeater", setupTraiteEditEntry, setupTraiteDisplayEntry, null)
     }  
 }
 
