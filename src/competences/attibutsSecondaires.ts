@@ -28,6 +28,11 @@ export const setupAttrSecondaires = function(sheet: PavillonSheet) {
         sheet.find("initiative_val").text(sheet.initiative().toString())
     }, [sheet.initiative])
 
+    // Ajout de l'initiative à la table
+    sheet.find("initiative_label").on("click", function() {
+        new RollBuilder(sheet.raw()).expression("(" + sheet.find("initiative_val").value() as string  + ")[initiative]").visibility("gmonly").title("Initiative").roll()
+    })
+
     // Effet d'écriture de MDAfr MDFor en fonction des modificateurs enregistrés sur la feuille
     each(sheet.modifiers, function(modSignal, key) {
         effect(function() {

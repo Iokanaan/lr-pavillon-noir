@@ -44,6 +44,16 @@ export const setupDisplayedBlessures = function(sheet: PavillonSheet) {
         sheet.find("blessure_" + loc + "_9").on("update", function(cmp) { sheet.blessures.localisation[loc].detail.serieuse[1].set(cmp.value() as boolean) })
         sheet.find("blessure_" + loc + "_7").on("update", function(cmp) { sheet.blessures.localisation[loc].detail.legere[0].set(cmp.value() as boolean) })
         sheet.find("blessure_" + loc + "_8").on("update", function(cmp) { sheet.blessures.localisation[loc].detail.legere[1].set(cmp.value() as boolean) })
+        const protInputCmp = sheet.find("prot_" + loc + "_input")
+        const protValCmp = sheet.find("prot_" + loc + "_val")
+        protValCmp.on("click", function(cmp) {
+            cmp.hide()
+            protInputCmp.show()
+        })
+        protInputCmp.on("update", function(cmp) {
+            cmp.hide()
+            protValCmp.show()
+        })
     })
 
     const maxBlessuresRecord: Record<string, Computed<"legere" | "serieuse" | "grave" | "critique" | "coma" | "mort" | "aucune">> = {}

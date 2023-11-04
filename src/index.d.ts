@@ -28,6 +28,35 @@ declare global {
         foi: Signal<number>
     }
 
+    type NavireSheet = {
+        test: Signal<number>,
+    }  & ExtendedSheet<NavireData>
+
+    type PnjSheet = {
+        entryStates: Record<string, Record<string, RepeaterState | undefined>>,
+        selectedComp: Signal<CompetencePnj | undefined>,
+        professions: ProfessionHolder[],
+        posteBord: ProfessionHolder,
+        attr: Record<AttributEnum, Signal<number>>
+        modifiers: Record<Modificateur, Computed<number>>
+        comp: Record<string, CompSignals>,
+        religion: Signal<string>,
+        titre: Signal<string | undefined>,
+        reputation: Record<"glo" | "inf", { score: Signal<number>, level: Computed<number> }>,
+        initiative: Computed<number>,
+        taille: Signal<number | undefined>,
+        poids: Signal<number | undefined>,
+        age: Signal<number | undefined>,
+        origine: Signal<{
+            id: string | null,
+            peuple: string,
+            groupe: string,
+            indAfr: boolean
+        }>,
+        origineSociale: Signal<string>,
+        jeunesse: Signal<string>[],
+    }  & ExtendedSheet<PnjData>
+
     type PavillonSheet = {
         entryStates: Record<string, Record<string, RepeaterState | undefined>>,
         selectedComp: Signal<Competence | undefined>,
@@ -250,6 +279,11 @@ declare global {
         notes: string
     }
 
+    type CompPnjData = {
+        comp: string,
+        metier: boolean
+    }
+
     type WeaponData = {
         type_arme_choice: TypeArme,
         nom_arme_input: string,
@@ -299,9 +333,33 @@ declare global {
         code: LocalisationEnum
     }
 
+    type CompetencePnjEntity = {
+        id: string,
+        name: string,
+        metier: string,
+        category: string
+    }
+
+    type CompetencePnj = {
+        id: string,
+        name: string,
+        metier: boolean,
+        category: string
+    }
+
+    type TypeCompEntity = {
+        id: string,
+        name: string
+    }
+
+    type TypeComp = {
+        id: string,
+        name: string
+    }
+
     type LocalisationEnum = "tete" | "bras_droit" | "bras_gauche" | "torse" | "jambe_droite" | "jambe_gauche"
     type BlessureEnum = "legere" | "serieuse" | "grave" | "critique" | "coma" | "mort" | "aucune"
-    type LocalisationShortEnum = "tete"|"torse"|"bg"|"bd"|"jd"|"jg"
+    type LocalisationShortEnum = "tete" | "torse" | "bg" | "bd" | "jd" | "jg"
     
     type CompetenceEnum = 
         "balistique" |

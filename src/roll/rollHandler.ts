@@ -4,8 +4,10 @@ import { handleSequelle } from "./sequelles"
 
 export const resultCallback = function(result: DiceResult) {
     return function(sheet: Sheet<unknown>) {
+        if(result.containsTag("initiative")) {
+            sheet.get("result").text(result.total.toString())
         // Gestion des jets d'attaque
-        if(result.containsTag("attack")) {
+        } else if(result.containsTag("attack")) {
             handleAttack(sheet, result)
         // Gestion des jets de séquelle
         } else if(result.containsTag("sequelle")) {

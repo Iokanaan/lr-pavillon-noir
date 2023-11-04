@@ -1,6 +1,6 @@
-import { typesComp } from "./globals"
-import { mapCompetence } from "./utils/mappers"
-import { computed, intToWord, signal } from "./utils/utils"
+import { typesComp } from "../globals"
+import { mapCompetence } from "../utils/mappers"
+import { computed, intToWord, signal } from "../utils/utils"
 
 export const pavillonSheet = function(sheet: Sheet) {
 
@@ -47,7 +47,6 @@ export const pavillonSheet = function(sheet: Sheet) {
     })
     _pSheet.religion = signal(sheet.get("religion_input").value() as string)
     _pSheet.titre = signal(sheet.get("titre_input").value() as string)
-    log(_pSheet.titre())
     _pSheet.origineSociale = signal(sheet.get("origine_sociale_input").value() as string)
     _pSheet.jeunesse = [signal(sheet.get("jeunesse_1_input").value() as string), signal(sheet.get("jeunesse_2_input").value() as string)]
     _pSheet.professions = [buildProfession(_pSheet, sheet, "profession", 1), buildProfession(_pSheet, sheet, "profession", 2)]
@@ -335,10 +334,10 @@ const buildBlessures = function(sheet: Sheet) {
         if(blessuresByLevel.critique > 0 || blessuresByLevel.grave > 1) {
             return "critique"
         }
-        if(blessuresByLevel.grave > 0) {
+        if(blessuresByLevel.grave > 0 || blessuresByLevel.serieuse > 1) {
             return "grave"
         }
-        if(blessuresByLevel.serieuse > 0) {
+        if(blessuresByLevel.serieuse > 0 || blessuresByLevel.legere > 1) {
             return "serieuse"
         }
         if(blessuresByLevel.legere > 0) {

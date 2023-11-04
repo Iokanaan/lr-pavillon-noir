@@ -1,6 +1,6 @@
 import { computed, effect, signal } from "../utils/utils";
 
-export const reputationListener = function(sheet: PavillonSheet, typeRep: "glo" | "inf") {
+export const reputationListener = function(sheet: PavillonSheet | PnjSheet, typeRep: "glo" | "inf") {
 
     // Mise à jour de la feuille avec le score de réputation
     (sheet.find(typeRep + "_points") as Component<number>).on("update", function(cmp) {

@@ -1,12 +1,12 @@
-import { pavillonSheet } from "./pavillonSheet"
+import { pavillonSheet } from "./feuille/pavillonSheet"
 import { getOptionalCompType, setupComps, setupOptionalGroup } from "./competences/competences"
-import { setupAttribut } from "./main/attributs"
+import { setupAttribut, setupPnjAttribut } from "./main/attributs"
 import { setupBaseDescription, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupReligion, setupTitre } from "./personnage/identite"
 import { reputationListener } from "./main/reputation"
 import { setupRepeater } from "./utils/repeaters"
 import { setupDisplayedBlessures, setupSequelles } from "./combat/blessures"
 import { setupWeaponEditEntry, setupWeaponViewEntry } from "./combat/armes"
-import { globalSheets, optionalCompSlots } from "./globals"
+import { globalPnjSheets, globalSheets, optionalCompSlots } from "./globals"
 import { editableLabel } from "./utils/utils"
 import { setupAvantageDisplayEntity, setupAvantageEditEntry } from "./personnage/avantages"
 import { setupAttrSecondaires, setupValeurMetier } from "./competences/attibutsSecondaires"
@@ -19,6 +19,11 @@ import { setupBretteurName, setupCompEscrimeDisplayEntry, setupCompEscrimeEditEn
 import { setupSequellesEditEntry } from "./personnage/sequelles"
 import { setupManoeuvreDisplayEntry, setupManoeuvreEditEntry } from "./escrime/manoeuvres"
 import { setupTraiteDisplayEntry, setupTraiteEditEntry } from "./escrime/taites"
+import { testNavire } from "./navire/navire"
+import { navireSheet } from "./feuille/navireSheet"
+import { pnjSheet } from "./feuille/pnjSheet"
+import { setupCompetenceDisplayEntry, setupCompetenceEditEntry } from "./competences/pnjCompetences"
+import { setupXp } from "./main/xp"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -106,7 +111,37 @@ init = function(sheet) {
         setupBretteurName(pSheet)
         setupRepeater(pSheet, "manoeuvres_repeater", setupManoeuvreEditEntry, setupManoeuvreDisplayEntry, null)
         setupRepeater(pSheet, "traites_repeater", setupTraiteEditEntry, setupTraiteDisplayEntry, null)
+
+        setupXp(pSheet)
     }  
+    if(sheet.id() === "Navire") {
+        const nSheet = navireSheet(sheet)
+        testNavire(nSheet)
+    }
+    if(sheet.id() === "PNJ") {
+        const npcSheet = pnjSheet(sheet)
+        globalPnjSheets[sheet.getSheetId()] = npcSheet
+        npcSheet.find("character_name").text(sheet.properName())
+        Tables.get("attributs").each(function(attr: AttributEntity) {
+            setupPnjAttribut(npcSheet, attr)
+        })
+        setupBaseDescription(npcSheet, "taille")
+        setupBaseDescription(npcSheet, "poids")
+        setupBaseDescription(npcSheet, "age")
+        setupReligion(npcSheet)
+        setupTitre(npcSheet)
+        setupProfession(npcSheet, "profession", 2)
+        setupProfession(npcSheet, "poste_bord", 1)
+        setupPeuple(npcSheet)
+        setupOrigine(npcSheet)
+        setupJeunesse(npcSheet, 1)
+        setupJeunesse(npcSheet, 2)
+
+        reputationListener(npcSheet, "inf")
+        reputationListener(npcSheet, "glo")
+
+        setupRepeater(npcSheet, "competences_repeater", setupCompetenceEditEntry, setupCompetenceDisplayEntry, null)
+    }
 }
 
 getCriticalHits = function(result) {

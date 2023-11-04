@@ -21,6 +21,15 @@ export const mapSequelle = function(e: SequelleEntity): Sequelle {
     }
 }
 
+export const mapCompetencePnj = function(e: CompetencePnjEntity): CompetencePnj {
+    return {
+        id: e.id,
+        name: e.name,
+        metier: e.metier === "true",
+        category: e.category
+    }
+}
+
 export const mapWeaponEntity = function(e: WeaponEntity): Weapon {
     return {
         id: e.id,

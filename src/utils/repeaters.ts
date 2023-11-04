@@ -13,7 +13,7 @@
 
 
 export const setupRepeater = function(
-    sheet: PavillonSheet,
+    sheet: PavillonSheet | PnjSheet,
     repeaterId: string,
     setupEditEntry: ((entry: Component<any>) => void) | null,
     setupViewEntry: ((entry: Component<any>) => void) | null,

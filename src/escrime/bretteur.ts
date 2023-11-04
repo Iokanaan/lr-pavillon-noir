@@ -83,6 +83,12 @@ export const setupCompEscrimeEditEntry = function(entry: Component) {
     
     const escrimeChoiceCmp = entry.find("comp_escrime_choice");
     const escrimeInputCmp = entry.find("comp_escrime_input");
+    const customModeCmp = entry.find("custom_mode")
+    const customDisplayCmp = entry.find("display_custom")
+    const listDisplayCmp = entry.find("display_predef")
+    const customCol = entry.find("custom_col")
+    const predefCol = entry.find("predef_col")
+    
     const oppCmps: Component<boolean>[] = [
         entry.find("opp_1"),
         entry.find("opp_2"),
@@ -96,32 +102,58 @@ export const setupCompEscrimeEditEntry = function(entry: Component) {
         entry.find("opp_10")
     ]
 
+    const customMode = signal(customModeCmp.value())
+    let selectedVal = undefined
+    if(customMode()) {
+        selectedVal = escrimeInputCmp.value()
+    } else {
+        selectedVal = mapEscrime(Tables.get("escrimes").get(escrimeChoiceCmp.value())).id
+    }
 
     // Signal local pour la sélection de la competence 
-    const selectedEscrime = signal(mapEscrime(Tables.get("escrimes").get(escrimeChoiceCmp.value()))) as Signal<Escrime>
+    const selectedEscrime = signal(selectedVal) as Signal<string>
 
     // Mise à jour du métier, on met à jour la profession sélectionnée
     escrimeChoiceCmp.on("update", function(cmp) {
-        selectedEscrime.set(mapEscrime(Tables.get("escrimes").get(cmp.value())))
+        selectedEscrime.set(mapEscrime(Tables.get("escrimes").get(cmp.value())).id)
+    })
+
+    customModeCmp.on("update", function(cmp) {
+        customMode.set(cmp.value())
     })
 
     effect(function() {
-        const escrime = selectedEscrime()
-        escrimeInputCmp.value(escrime.name)
-        let i = 0
-        while(i < oppCmps.length) {
-            oppCmps[i].value(escrime.opportunites.indexOf(i+1) !== -1)
-            i++
-        }
-    }, [selectedEscrime])
-
-    entry.find("display_custom").on("click", function() {
-        if(entry.find("predef_col").visible()) {
-            entry.find("predef_col").hide()
-            entry.find("custom_col").show()
+        if(customMode()) {
+            predefCol.hide()
+            customCol.show()
+            listDisplayCmp.show()
+            customDisplayCmp.hide()
         } else {
-            entry.find("predef_col").show()
-            entry.find("custom_col").hide()
+            predefCol.show()
+            customCol.hide()
+            listDisplayCmp.hide()
+            customDisplayCmp.show()
         }
+    }, [customMode])
+
+    effect(function() {
+        if(!customMode()) {
+            const escrime = mapEscrime(Tables.get("escrimes").get(selectedEscrime()))
+            escrimeInputCmp.value(escrime.name)
+            let i = 0
+            while(i < oppCmps.length) {
+                oppCmps[i].value(escrime.opportunites.indexOf(i+1) !== -1)
+                i++
+            }
+        }
+    }, [selectedEscrime, customMode])
+
+    customDisplayCmp.on("click", function() {
+        customModeCmp.value(true)
     })
+
+    listDisplayCmp.on("click", function() {
+        customModeCmp.value(false)
+    })
+
 }

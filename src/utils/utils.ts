@@ -116,6 +116,17 @@ export const resetModifiers = function(sheet: PavillonSheet) {
     
 }
 
+export const resetPnjModifiers = function(sheet: PnjSheet) {
+    Tables.get("attributs").each(function(attr) {
+        const cmp = sheet.find(attr.id + "_val") as Component<number>
+        cmp.virtualValue(cmp.rawValue())
+        setVirtualBg(cmp)
+    })
+    each((sheet.find("competences_repeater") as Component<Record<string, CompPnjData>>).value(), function(_, id) {
+        //sheet.find("competences_repeater").find(id).
+    })
+    
+}
 
 // Affichage rouge/vert quand on change les valeurs virtuelles
 export const setVirtualBg = function(cmp: Component<number>) {

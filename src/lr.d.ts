@@ -39,7 +39,9 @@ declare global {
         get(elem: 'sequelles_tete' | 'sequelles_torse' | 'sequelles_jambe' | 'sequelles_bras'): Table<SequelleEntity>
         get(elem: 'localisations'): Table<LocalisationEntity>,
         get(elem: 'escrimes'): Table<EscrimeEntity>,
-        get(elem: 'manoeuvres'): Table<ManoeuvreEntity>
+        get(elem: 'manoeuvres'): Table<ManoeuvreEntity>,
+        get(elem: 'comp_pnj'): Table<CompentencePnjEntity>,
+        get(elem: 'types_comp'): Table<TypeCompEntity>
         get(id: string): Table
     }
     

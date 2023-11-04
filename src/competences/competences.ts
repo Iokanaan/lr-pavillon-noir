@@ -8,8 +8,8 @@ export const setupComps = function(sheet: PavillonSheet) {
     // Enregistrement de la compétence sélectionnée dans la feuille
     const setSelectedComp = function(comp: Competence) {
         const labelCmp = sheet.find(comp.id + "_label")
-        const selectedComp = sheet.selectedComp()
         labelCmp.on("click", function(cmp) {
+            const selectedComp = sheet.selectedComp()
             if(selectedComp === undefined || selectedComp.id !== comp.id) {
                 if(comp.name === undefined) {
                     comp.name = cmp.text()
@@ -69,8 +69,6 @@ export const setupComps = function(sheet: PavillonSheet) {
             setValUpdateListener(comp)
         })
     })
-
-
 }
 
 export const getOptionalCompType = function(comp: string) {
