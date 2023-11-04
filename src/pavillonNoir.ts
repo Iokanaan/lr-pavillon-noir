@@ -153,6 +153,10 @@ getCriticalHits = function(result) {
         "10": {
             "critical": [1],
             "fumble": [10]
+        },
+        "12": {
+            "critical": [1],
+            "fumble": [12]
         }
     }
 }

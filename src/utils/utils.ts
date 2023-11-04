@@ -141,3 +141,16 @@ export const setVirtualBg = function(cmp: Component<number>) {
         cmp.removeClass("bg-danger")
     }
 }
+
+export const setVirtualBgReverse = function(cmp: Component<number>) {
+    if(cmp.value() < cmp.rawValue()) {
+        cmp.addClass("bg-success")
+        cmp.removeClass("bg-danger")
+    } else if(cmp.value() > cmp.rawValue()) {
+        cmp.removeClass("bg-success")
+        cmp.addClass("bg-danger")
+    } else {
+        cmp.removeClass("bg-success")
+        cmp.removeClass("bg-danger")
+    }
+}

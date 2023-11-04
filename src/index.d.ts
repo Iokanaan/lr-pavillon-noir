@@ -301,7 +301,8 @@ declare global {
         notes_input: string,
         has_modificateur_degats: boolean,
         type_arme_int: 1 | 2 | 3 | 4,
-        competence_arme_choice: string
+        competence_arme_choice: string,
+        long_feu: number
     }
 
     type SequelleEntity = {

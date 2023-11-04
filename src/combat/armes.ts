@@ -27,9 +27,23 @@ const setVirtualColor = function(cmp: Component<string>, refValue: number) {
     }
 }
 
+const setVirtualColorReverse = function(cmp: Component<string>, refValue: number) {
+    if(parseInt(cmp.value()) < refValue) {
+        cmp.addClass("text-success")
+        cmp.removeClass("text-danger")
+    } else if(parseInt(cmp.value()) > refValue) {
+        cmp.removeClass("text-success")
+        cmp.addClass("text-danger")       
+    } else {
+        cmp.removeClass("text-success")
+        cmp.removeClass("text-danger")
+    }
+}
+
+
 export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
     const sheet = globalSheets[entry.sheet().getSheetId()]
-        
+    
     const attrModifier = signal(0)
     const virtualAttr = computed(function() {
         const virtualVal = sheet.attr[entry.value().attr_arme_choice]() + attrModifier() + entry.value().modif_fac_input
@@ -37,6 +51,12 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         setVirtualColor(entry.find("roll_formula_attr"), sheet.attr[entry.value().attr_arme_choice]() + entry.value().modif_fac_input)
         return virtualVal
     }, [sheet.attr[entry.value().attr_arme_choice], attrModifier])
+
+    if(entry.value().type_arme_choice === "feu") {
+        entry.find("feu_row").show()
+    } else {
+        entry.find("feu_row").hide()
+    }
 
     const compModifier = signal(0)
     const virtualComp = computed(function() {
@@ -77,7 +97,24 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         compModifier
     ])
 
-    log("computed damage")
+    const longFeuModifier = signal(0)
+
+    const virtualLongFeu = computed(function() {
+        if(entry.value().type_arme_choice === "feu") {
+            const compVal = sheet.comp[entry.value().competence_arme_choice].value()
+            const virtualVal = 4 - compVal + longFeuModifier() + entry.value().long_feu
+            entry.find("long_feu_val").value(virtualVal)
+            setVirtualColorReverse(entry.find("long_feu_val"), 4 - compVal + entry.value().long_feu)
+            return virtualVal
+        }
+        return undefined
+    }, [
+        sheet.comp["mousquet"].value,
+        sheet.comp["pistolet"].value,
+        sheet.comp["grenade"].value,
+        longFeuModifier
+    ])
+
     const damageModifier = signal(0)
     const virtualDamage = computed(function() {
         let bonus = 0
@@ -85,7 +122,6 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
             bonus += sheet.modifiers[entry.value().modif_degats_choice as Modificateur]()
         }
         const virtualVal = entry.value().degats_input + bonus + damageModifier() 
-        log(virtualVal)
         entry.find("roll_degats").value(virtualVal)
         setVirtualColor(entry.find("roll_degats"), entry.value().degats_input + bonus)
         return virtualVal
@@ -115,6 +151,14 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         damageModifier.set(damageModifier() - 1)
     })
 
+    entry.find("long_feu_plus").on("click", function() {
+        longFeuModifier.set(longFeuModifier() + 1)
+    })
+
+    entry.find("long_feu_minus").on("click", function() {
+        longFeuModifier.set(longFeuModifier() - 1)
+    })
+
     entry.find("eff_plus").hide()
     entry.find("eff_minus").hide()
     entry.find("fac_plus").hide()
@@ -130,9 +174,12 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
             entry.find("fac_minus").hide()
             entry.find("degats_plus").hide()
             entry.find("degats_minus").hide()
+            entry.find("long_feu_plus").hide()
+            entry.find("long_feu_minus").hide()
             attrModifier.set(0)
             compModifier.set(0)
             damageModifier.set(0)
+            longFeuModifier.set(0)
         } else {
             entry.find("eff_plus").show()
             entry.find("eff_minus").show()
@@ -140,6 +187,8 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
             entry.find("fac_minus").show()
             entry.find("degats_plus").show()
             entry.find("degats_minus").show()
+            entry.find("long_feu_plus").show()
+            entry.find("long_feu_minus").show()
         }            
     })
 
@@ -157,6 +206,9 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         }
         expression += "<={1:2} " + virtualAttr()
         expression = "(" + expression + ")"
+        if(entry.value().type_arme_choice === "feu") {
+            expression += " + (1d20 > " + virtualLongFeu() + ")[long_feu]"
+        }
         expression += " + 1d6[localisation]"
         expression = "(" + expression + ")[attack," + "damage_" + intToWord(virtualDamage()) + "]"
         new RollBuilder(entry.sheet()).title(cmp.text()).expression(expression).roll()
@@ -195,6 +247,8 @@ export const setupWeaponEditEntry = function(entry: Component<WeaponData>) {
     const notesCmp = entry.find("notes_input") as Component<string>
     const cacRow = entry.find("cac_row") as Component<null>
     const distRow = entry.find("dist_row") as Component<null>
+    const longFeuCmp = entry.find("long_feu") as Component<number>
+    const feuRow = entry.find("feu_row") as Component<null>
 
     // Définition de valeurs pas défaut
     if(entry.value().modif_degats_choice === undefined || entry.value().modif_degats_choice === null) {
@@ -229,6 +283,14 @@ export const setupWeaponEditEntry = function(entry: Component<WeaponData>) {
         nbMainsCmp.value(1)
     }
 
+    if(entry.value().nb_mains_input === undefined || entry.value().nb_mains_input === null) {
+        nbMainsCmp.value(1)
+    }
+
+    if(entry.value().long_feu === undefined || entry.value().long_feu === null) {
+        longFeuCmp.value(0)
+    }
+
     // Signal local pour définir la liste des competences à afficher selon le type d'arme
     const typeArme = signal(typeArmeChoiceCmp.value())
     effect(function() {
@@ -239,6 +301,11 @@ export const setupWeaponEditEntry = function(entry: Component<WeaponData>) {
         } else {
             cacRow.hide()
             distRow.show()
+        }
+        if(typeArme() === "feu") {
+            feuRow.show()
+        } else {
+            feuRow.hide()
         }
         switch(typeArme()) {
             case "cac":
