@@ -168,6 +168,10 @@ export const pavillonSheet = function(sheet: Sheet) {
         _pSheet.voies[i] = buildVoie(sheet, i+1)
     }
 
+    // Paramétrage
+    _pSheet.params = {}
+    _pSheet.params.excludeLongFeu = signal(sheet.get("exclude_long_feu").value())
+
     return _pSheet as PavillonSheet
 }
 
@@ -263,7 +267,7 @@ const reputationLevel = function(reputationScore: Signal<number>) {
     }, [reputationScore])
 }
 
-const buildBlessures = function(sheet: Sheet) {
+export const buildBlessures = function(sheet: Sheet) {
     const blessures = {
         localisation: {
             "tete": { detail : buildDetailBlessures(sheet, "tete") },

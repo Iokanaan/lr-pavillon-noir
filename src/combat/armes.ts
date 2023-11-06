@@ -27,6 +27,7 @@ const setVirtualColor = function(cmp: Component<string>, refValue: number) {
     }
 }
 
+// Fonction inverse, baisser la valeur affiche vert
 const setVirtualColorReverse = function(cmp: Component<string>, refValue: number) {
     if(parseInt(cmp.value()) < refValue) {
         cmp.addClass("text-success")
@@ -41,23 +42,48 @@ const setVirtualColorReverse = function(cmp: Component<string>, refValue: number
 }
 
 
+// Fonction appelée à l'affichage d'une arme
 export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
+    
+    // Définition des composants
+    const attrRollCmp = entry.find("roll_formula_attr") as Component<string>
+    const feuRow = entry.find("feu_row") as Component<null>
+    const compRollCmp = entry.find("roll_formula_comp") as Component<string>
+    const longFeuCmp = entry.find("long_feu_val") as Component<string>
+    const weaponTitleCmp = entry.find("weapon_title") as Component<string>
+
+    // Boutons +/-
+    const degatCmp = entry.find("roll_degats") as Component<string>
+    const effPlusCmp = entry.find("eff_plus") as Component<string>
+    const effMinCmp = entry.find("eff_minus") as Component<string>
+    const facPlusCmp = entry.find("fac_plus") as Component<string>
+    const facMinCmp = entry.find("fac_minus") as Component<string>
+    const degatPlusCmp = entry.find("degats_plus") as Component<string>
+    const degatMinCmp = entry.find("degats_minus") as Component<string>
+    const longFeuPlusCmp = entry.find("long_feu_plus") as Component<string>
+    const longFeuMinCmp = entry.find("long_feu_minus") as Component<string>
+
+    // Récupération de la feuille
     const sheet = globalSheets[entry.sheet().getSheetId()]
     
+
     const attrModifier = signal(0)
     const virtualAttr = computed(function() {
         const virtualVal = sheet.attr[entry.value().attr_arme_choice]() + attrModifier() + entry.value().modif_fac_input
-        entry.find("roll_formula_attr").value(virtualVal)
-        setVirtualColor(entry.find("roll_formula_attr"), sheet.attr[entry.value().attr_arme_choice]() + entry.value().modif_fac_input)
+        attrRollCmp.value(virtualVal.toString())
+        setVirtualColor(attrRollCmp, sheet.attr[entry.value().attr_arme_choice]() + entry.value().modif_fac_input)
         return virtualVal
     }, [sheet.attr[entry.value().attr_arme_choice], attrModifier])
 
-    if(entry.value().type_arme_choice === "feu") {
-        entry.find("feu_row").show()
-    } else {
-        entry.find("feu_row").hide()
-    }
+    effect(function() {
+        if(entry.value().type_arme_choice === "feu" && !sheet.params.excludeLongFeu()) {
+            feuRow.show()
+        } else {
+            feuRow.hide()
+        }
+    }, [sheet.params.excludeLongFeu])
 
+    // Calcul de la valeur de compétence, avec prise en compte de l'éventuel modificateur
     const compModifier = signal(0)
     const virtualComp = computed(function() {
         let compVal = 0
@@ -81,8 +107,8 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
                 break
         }
         const virtualVal = compVal + compModifier() + entry.value().modif_eff_input
-        entry.find("roll_formula_comp").value(virtualVal)
-        setVirtualColor(entry.find("roll_formula_comp"), compVal + entry.value().modif_eff_input)
+        compRollCmp.value(virtualVal.toString())
+        setVirtualColor(compRollCmp, compVal + entry.value().modif_eff_input)
         return virtualVal
     }, [
         sheet.comp["arme_blanche_1"].value,
@@ -97,14 +123,15 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         compModifier
     ])
 
+    
+    // Calcul de la valeur de long feu, avec prise en compte de l'éventuel modificateur
     const longFeuModifier = signal(0)
-
     const virtualLongFeu = computed(function() {
         if(entry.value().type_arme_choice === "feu") {
             const compVal = sheet.comp[entry.value().competence_arme_choice].value()
             const virtualVal = 4 - compVal + longFeuModifier() + entry.value().long_feu
-            entry.find("long_feu_val").value(virtualVal)
-            setVirtualColorReverse(entry.find("long_feu_val"), 4 - compVal + entry.value().long_feu)
+            longFeuCmp.value(virtualVal.toString())
+            setVirtualColorReverse(longFeuCmp, 4 - compVal + entry.value().long_feu)
             return virtualVal
         }
         return undefined
@@ -115,6 +142,7 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         longFeuModifier
     ])
 
+    // Calcul de la valeur de dégats, avec prise en compte de l'éventuel modificateur
     const damageModifier = signal(0)
     const virtualDamage = computed(function() {
         let bonus = 0
@@ -122,11 +150,12 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
             bonus += sheet.modifiers[entry.value().modif_degats_choice as Modificateur]()
         }
         const virtualVal = entry.value().degats_input + bonus + damageModifier() 
-        entry.find("roll_degats").value(virtualVal)
-        setVirtualColor(entry.find("roll_degats"), entry.value().degats_input + bonus)
+        degatCmp.value(virtualVal.toString())
+        setVirtualColor(degatCmp, entry.value().degats_input + bonus)
         return virtualVal
     },[sheet.modifiers["MDFor"], sheet.modifiers["MDAdr"], damageModifier])
 
+    // Actions +/- sur les différents modificateurs
     entry.find("eff_plus").on("click", function() {
         compModifier.set(compModifier() + 1)
     })
@@ -159,40 +188,45 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         longFeuModifier.set(longFeuModifier() - 1)
     })
 
-    entry.find("eff_plus").hide()
-    entry.find("eff_minus").hide()
-    entry.find("fac_plus").hide()
-    entry.find("fac_minus").hide()
-    entry.find("degats_plus").hide()
-    entry.find("degats_minus").hide()
+    effPlusCmp.hide()
+    effMinCmp.hide()
+    facPlusCmp.hide()
+    facMinCmp.hide()
+    degatPlusCmp.hide()
+    degatMinCmp.hide()
+    longFeuPlusCmp.hide()
+    longFeuMinCmp.hide()
 
+    // Affichage des +/- en mode modification d'attaque
     entry.find("edit_attack").on("click", function() {
-        if(entry.find("eff_plus").visible()) {
-            entry.find("eff_plus").hide()
-            entry.find("eff_minus").hide()
-            entry.find("fac_plus").hide()
-            entry.find("fac_minus").hide()
-            entry.find("degats_plus").hide()
-            entry.find("degats_minus").hide()
-            entry.find("long_feu_plus").hide()
-            entry.find("long_feu_minus").hide()
+        if(effPlusCmp.visible()) {
+            effPlusCmp.hide()
+            effMinCmp.hide()
+            facPlusCmp.hide()
+            facMinCmp.hide()
+            degatPlusCmp.hide()
+            degatMinCmp.hide()
+            longFeuPlusCmp.hide()
+            longFeuMinCmp.hide()
             attrModifier.set(0)
             compModifier.set(0)
             damageModifier.set(0)
             longFeuModifier.set(0)
         } else {
-            entry.find("eff_plus").show()
-            entry.find("eff_minus").show()
-            entry.find("fac_plus").show()
-            entry.find("fac_minus").show()
-            entry.find("degats_plus").show()
-            entry.find("degats_minus").show()
-            entry.find("long_feu_plus").show()
-            entry.find("long_feu_minus").show()
+            effPlusCmp.show()
+            effMinCmp.show()
+            facPlusCmp.show()
+            facMinCmp.show()
+            degatPlusCmp.show()
+            degatMinCmp.show()
+            longFeuPlusCmp.show()
+            longFeuMinCmp.show()
         }            
     })
 
-    entry.find("weapon_title").on("click", function(cmp) {
+    // Gestion du clic sur l'arme pour lancer l'attaque
+    weaponTitleCmp.on("click", function(cmp) {
+        // expression exemple : ((2d10 <={1:2} 5) + (1d20 < 4)[long_feu] + 1d6[localisation])[attack,damage_a]
         let expression = ""
         if(virtualComp() !== 0) {
             expression += virtualComp() + "d10 "
@@ -206,7 +240,7 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
         }
         expression += "<={1:2} " + virtualAttr()
         expression = "(" + expression + ")"
-        if(entry.value().type_arme_choice === "feu") {
+        if(entry.value().type_arme_choice === "feu" && !sheet.params.excludeLongFeu()) {
             expression += " + (1d20 > " + virtualLongFeu() + ")[long_feu]"
         }
         expression += " + 1d6[localisation]"
@@ -302,7 +336,7 @@ export const setupWeaponEditEntry = function(entry: Component<WeaponData>) {
             cacRow.hide()
             distRow.show()
         }
-        if(typeArme() === "feu") {
+        if(typeArme() === "feu" && !globalSheets[entry.sheet().getSheetId()].params.excludeLongFeu()) {
             feuRow.show()
         } else {
             feuRow.hide()

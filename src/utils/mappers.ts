@@ -26,7 +26,9 @@ export const mapCompetencePnj = function(e: CompetencePnjEntity): CompetencePnj 
         id: e.id,
         name: e.name,
         metier: e.metier === "true",
-        category: e.category
+        category: e.category,
+        attaque: e.attaque === "true",
+        feu: e.feu === "true"
     }
 }
 

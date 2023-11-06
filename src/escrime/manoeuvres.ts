@@ -1,7 +1,10 @@
 import { mapEscrime } from "../utils/mappers"
 import { effect, signal } from "../utils/utils"
 
+// Fonction définissant le mode édition des manoeuvres
 export const setupManoeuvreEditEntry = function(entry: Component) {
+
+    // Définition des composants
     const escrimeChoiceCmp = entry.find("type_choice")
     const escrimeCmp = entry.find("type")
     const customModeCmp = entry.find("custom_mode") as Component<boolean>
@@ -13,6 +16,7 @@ export const setupManoeuvreEditEntry = function(entry: Component) {
     // Signal local pour la sélection de la competence 
     let selectedVal = undefined
 
+    // Mise à jour de la valeur sélectionnée en fonction de si on est en mode custom ou nom
     if(customMode()) {
         selectedVal = escrimeCmp.value()
     } else {
@@ -20,6 +24,7 @@ export const setupManoeuvreEditEntry = function(entry: Component) {
     }
     const selectedEscrime = signal(selectedVal) as Signal<string>
 
+    // Affichange des champs selon si on est en mode custom ou non
     effect(function() {
         if(customMode()) {
             escrimeChoiceCmp.hide()
@@ -34,6 +39,7 @@ export const setupManoeuvreEditEntry = function(entry: Component) {
         }
     }, [customMode])
 
+    // Mise à jour du signal custom en fonction de la valeur de la checkbox
     customModeCmp.on("update", function(cmp) {
         customMode.set(cmp.value())
     })
@@ -43,12 +49,14 @@ export const setupManoeuvreEditEntry = function(entry: Component) {
         selectedEscrime.set(mapEscrime(Tables.get("escrimes").get(cmp.value())).name)
     })
 
+    // Mise à jour du champ input en fonction de l'escrime sélectionnée
     effect(function() {
         if(escrimeCmp.value() !== selectedEscrime()) {
             escrimeCmp.value(selectedEscrime())
         }
     }, [selectedEscrime])
 
+    // Fonctions de bascule mode custom / liste
     customDisplayCmp.on("click", function() {
         customModeCmp.value(true)
     })
@@ -60,13 +68,18 @@ export const setupManoeuvreEditEntry = function(entry: Component) {
 
 }
 
+// Fonction définissant le mode affichage des manoeuvres
 export const setupManoeuvreDisplayEntry = function(entry: Component) {
-    entry.find("effet_row").hide()
-    entry.find("display_effet").on("click", function() {
-        if(entry.find("effet_row").visible()) {
-            entry.find("effet_row").hide()
+
+    const effetRow = entry.find("effet_row") as Component<null>
+    const displayCmp = entry.find("display_effet") as Component<string> 
+
+    effetRow.hide()
+    displayCmp.on("click", function() {
+        if(effetRow.visible()) {
+            effetRow.hide()
         } else {
-            entry.find("effet_row").show()
+            effetRow.show()
         }
     })
 }

@@ -1,4 +1,5 @@
 import { computed, intToWord, signal } from "../utils/utils"
+import { buildBlessures } from "./pavillonSheet"
 
 export const pnjSheet = function(sheet: Sheet) {
 
@@ -71,6 +72,9 @@ export const pnjSheet = function(sheet: Sheet) {
     _pSheet.initiative = computed(function() {
         return _pSheet.attr['ADA']()
     }, [_pSheet.attr['ADA']])
+
+    // Blessures
+    _pSheet.blessures = buildBlessures(sheet)
 
     return _pSheet as PnjSheet
 }

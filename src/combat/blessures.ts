@@ -1,7 +1,8 @@
 import { mapLocalisation } from "../utils/mappers"
-import { computed, effect, signal } from "../utils/utils"
+import { effect } from "../utils/utils"
 
-export const setupDisplayedBlessures = function(sheet: PavillonSheet) {
+export const setupDisplayedBlessures = function(sheet: PavillonSheet | PnjSheet) {
+    // Définition du nombre de cases à afficher selon la résistance
     effect(function() {
         const localisations = ["tete","torse","bd","bg","jd","jg"]
         const res = sheet.attr['RES']()
@@ -31,7 +32,7 @@ export const setupDisplayedBlessures = function(sheet: PavillonSheet) {
         }
     }, [sheet.attr['RES']]);
 
-
+    // Ajout a la feuille des blesseurs à la mise a jour des cases
     (["tete", "torse", "bg", "bd", "jg", "jd"] as LocalisationShortEnum[]).forEach(function(loc) {
         sheet.find("blessure_" + loc + "_1").on("update", function(cmp) { sheet.blessures.localisation[loc].detail.mort[0].set(cmp.value() as boolean) })
         sheet.find("blessure_" + loc + "_2").on("update", function(cmp) { sheet.blessures.localisation[loc].detail.coma[0].set(cmp.value() as boolean) })
@@ -44,67 +45,82 @@ export const setupDisplayedBlessures = function(sheet: PavillonSheet) {
         sheet.find("blessure_" + loc + "_9").on("update", function(cmp) { sheet.blessures.localisation[loc].detail.serieuse[1].set(cmp.value() as boolean) })
         sheet.find("blessure_" + loc + "_7").on("update", function(cmp) { sheet.blessures.localisation[loc].detail.legere[0].set(cmp.value() as boolean) })
         sheet.find("blessure_" + loc + "_8").on("update", function(cmp) { sheet.blessures.localisation[loc].detail.legere[1].set(cmp.value() as boolean) })
-        const protInputCmp = sheet.find("prot_" + loc + "_input")
-        const protValCmp = sheet.find("prot_" + loc + "_val")
-        protValCmp.on("click", function(cmp) {
-            cmp.hide()
-            protInputCmp.show()
+
+        // Gestioin de la protection
+        const protInputCmp = sheet.find("prot_" + loc + "_input") as Component<string>
+        const protLabelCmp = sheet.find("prot_" + loc + "_label") as Component<string>
+        const protValCmp = sheet.find("prot_" + loc + "_val") as Component<string>
+        protLabelCmp.on("click", function() {
+            if(protValCmp.visible()) {
+                protValCmp.hide()
+                protInputCmp.show()
+            } else {
+                protValCmp.show()
+                protInputCmp.hide()
+            }
         })
-        protInputCmp.on("update", function(cmp) {
-            cmp.hide()
+        protInputCmp.on("update", function() {
+            protInputCmp.hide()
             protValCmp.show()
         })
     })
 
-    const maxBlessuresRecord: Record<string, Computed<"legere" | "serieuse" | "grave" | "critique" | "coma" | "mort" | "aucune">> = {}
+    // Affichage du libellé d'état général en fonction du niveau de blesssure
     effect(function() {
+        const etatGeneralCmp = sheet.find("etat_general_label") as Component<string>
         switch(sheet.blessures.general.etat()) {
             case "mort":
-                sheet.find("etat_general_label").value(_("Mort"))
+                etatGeneralCmp.value(_("Mort"))
                 break
             case "coma":
-                sheet.find("etat_general_label").value(_("Coma"))
+                etatGeneralCmp.value(_("Coma"))
                 break
             case "critique":
-                sheet.find("etat_general_label").value(_("Blessure critique"))
+                etatGeneralCmp.value(_("Blessure critique"))
                 break
             case "grave":
-                sheet.find("etat_general_label").value(_("Gravement blessé"))
+                etatGeneralCmp.value(_("Gravement blessé"))
                 break
             case "serieuse":
-                sheet.find("etat_general_label").value(_("Sérieusement blessé"))
+                etatGeneralCmp.value(_("Sérieusement blessé"))
                 break
             case "legere":
-                sheet.find("etat_general_label").value(_("Légèrement blessé"))
+                etatGeneralCmp.value(_("Légèrement blessé"))
                 break
             case "aucune":
             default:
-                sheet.find("etat_general_label").value(_("Indemne"))
+                etatGeneralCmp.value(_("Indemne"))
         }
     }, [sheet.blessures.general.etat])
 
+    // Affichage du malus de blessure
     effect(function() {
+        const etatGeneralCmp = sheet.find("etat_general_malus") as Component<string>
         if(sheet.blessures.general.malus() !== 0) {
-            sheet.find("etat_general_malus").value("Malus : -" + sheet.blessures.general.malus().toString())
+            etatGeneralCmp.value("Malus : -" + sheet.blessures.general.malus().toString())
         } else {
-            sheet.find("etat_general_malus").value("Malus : -")
+            etatGeneralCmp.value("Malus : -")
         }
     }, [sheet.blessures.general.malus])
     
 }
 
+// Gestion des séquelles
 export const setupSequelles = function(sheet: PavillonSheet) {
     Tables.get("localisations").each(function(l) {
         const loc = mapLocalisation(l).code
-        sheet.find('sequelles_' + loc + '_row_1').hide()
-        sheet.find('sequelles_' + loc + '_row_2').hide()
-        sheet.find('sequelles_' + loc + '_title').on('click', function() {
-            if(sheet.find('sequelles_' + loc + '_row_1').visible()) {
-                sheet.find('sequelles_' + loc + '_row_1').hide()
-                sheet.find('sequelles_' + loc + '_row_2').hide()
+        const seqRow1 = sheet.find('sequelles_' + loc + '_row_1') as Component<null>
+        const seqRow2 = sheet.find('sequelles_' + loc + '_row_2') as Component<null>
+        const titleCmp = sheet.find('sequelles_' + loc + '_title') as Component<string>
+        seqRow1.hide()
+        seqRow2.hide()
+        titleCmp.on('click', function() {
+            if(seqRow1.visible()) {
+                seqRow1.hide()
+                seqRow2.hide()
             } else {
-                sheet.find('sequelles_' + loc + '_row_1').show()
-                sheet.find('sequelles_' + loc + '_row_2').show()
+                seqRow1.show()
+                seqRow2.show()
             }
         })
     })

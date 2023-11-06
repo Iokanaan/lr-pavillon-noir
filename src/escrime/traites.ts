@@ -1,14 +1,16 @@
 import { mapEscrime } from "../utils/mappers"
 import { effect, signal } from "../utils/utils"
 
+// Fonction appelée au mode édition des traités
 export const setupTraiteEditEntry = function(entry: Component) {
-    log("t")
-    const escrimeChoiceCmp = entry.find("type_choice")
-    const escrimeCmp = entry.find("type")
-    // Signal local pour la sélection de la competence 
+
+    // Définition des composants
+    const escrimeChoiceCmp = entry.find("type_choice") as ChoiceComponent<string>
+    const escrimeCmp = entry.find("type") as Component<string>
+    const customType = entry.find("custom_type") as Component<string>
+
     const selectedEscrime = signal(mapEscrime(Tables.get("escrimes").get(escrimeChoiceCmp.value()))) as Signal<Escrime>
-    log("totto")
-    // Mise à jour du métier, on met à jour la profession sélectionnée
+
     escrimeChoiceCmp.on("update", function(cmp) {
         selectedEscrime.set(mapEscrime(Tables.get("escrimes").get(cmp.value())))
     })
@@ -16,8 +18,8 @@ export const setupTraiteEditEntry = function(entry: Component) {
     effect(function() {
         escrimeCmp.value(selectedEscrime().name)
     }, [selectedEscrime])
-    log("totto2")
-    entry.find("custom_type").on("click", function() {
+
+    customType.on("click", function() {
         if(escrimeChoiceCmp.visible()) {
             escrimeChoiceCmp.hide()
             escrimeCmp.show()

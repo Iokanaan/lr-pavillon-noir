@@ -55,6 +55,16 @@ declare global {
         }>,
         origineSociale: Signal<string>,
         jeunesse: Signal<string>[],
+        blessures: {
+            localisation: Record<LocalisationShortEnum, {
+                detail: Record<BlessureEnum, Signal<boolean>[]>,
+                consolide: Computed<BlessureEnum>
+            }>,
+            general: { 
+                etat: Computed<BlessureEnum>,
+                malus: Computed<number>   
+            }
+        },
     }  & ExtendedSheet<PnjData>
 
     type PavillonSheet = {
@@ -96,7 +106,10 @@ declare global {
         },
         typeArcane: Signal<"communion" | "possession">,
         faveurs: Computed<number>,
-        voies: Voie[]
+        voies: Voie[],
+        params: {
+            excludeLongFeu: signal<boolean>
+        }
     } & ExtendedSheet<CharData>
 
     type Competence = {
@@ -281,7 +294,10 @@ declare global {
 
     type CompPnjData = {
         comp: string,
-        metier: boolean
+        metier: boolean,
+        degats: number,
+        attaque: boolean,
+        long_feu: boolean
     }
 
     type WeaponData = {
@@ -338,14 +354,18 @@ declare global {
         id: string,
         name: string,
         metier: string,
-        category: string
+        category: string,
+        attaque: string,
+        feu: string
     }
 
     type CompetencePnj = {
         id: string,
         name: string,
         metier: boolean,
-        category: string
+        category: string,
+        attaque: boolean,
+        feu: boolean
     }
 
     type TypeCompEntity = {

@@ -1,6 +1,6 @@
 import { pavillonSheet } from "./feuille/pavillonSheet"
 import { getOptionalCompType, setupComps, setupOptionalGroup } from "./competences/competences"
-import { setupAttribut, setupPnjAttribut } from "./main/attributs"
+import { setupAttribut } from "./main/attributs"
 import { setupBaseDescription, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupReligion, setupTitre } from "./personnage/identite"
 import { reputationListener } from "./main/reputation"
 import { setupRepeater } from "./utils/repeaters"
@@ -18,12 +18,14 @@ import { pouvoirsSacres } from "./arcanes/voies"
 import { setupBretteurName, setupCompEscrimeDisplayEntry, setupCompEscrimeEditEntry } from "./escrime/bretteur"
 import { setupSequellesEditEntry } from "./personnage/sequelles"
 import { setupManoeuvreDisplayEntry, setupManoeuvreEditEntry } from "./escrime/manoeuvres"
-import { setupTraiteDisplayEntry, setupTraiteEditEntry } from "./escrime/taites"
+import { setupTraiteDisplayEntry, setupTraiteEditEntry } from "./escrime/traites"
 import { testNavire } from "./navire/navire"
 import { navireSheet } from "./feuille/navireSheet"
 import { pnjSheet } from "./feuille/pnjSheet"
-import { setupCompetenceDisplayEntry, setupCompetenceEditEntry } from "./competences/pnjCompetences"
+import { setupCompetenceDisplayEntry, setupCompetenceEditEntry, setupInitiative } from "./competences/pnjCompetences"
 import { setupXp } from "./main/xp"
+import { setParametrage } from "./parametrage/parametrage"
+import { setupPnjAttribut } from "./main/pnjAttributs"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -113,6 +115,8 @@ init = function(sheet) {
         setupRepeater(pSheet, "traites_repeater", setupTraiteEditEntry, setupTraiteDisplayEntry, null)
 
         setupXp(pSheet)
+
+        setParametrage(pSheet)
     }  
     if(sheet.id() === "Navire") {
         const nSheet = navireSheet(sheet)
@@ -125,6 +129,7 @@ init = function(sheet) {
         Tables.get("attributs").each(function(attr: AttributEntity) {
             setupPnjAttribut(npcSheet, attr)
         })
+        setupInitiative(npcSheet)
         setupBaseDescription(npcSheet, "taille")
         setupBaseDescription(npcSheet, "poids")
         setupBaseDescription(npcSheet, "age")
@@ -136,7 +141,7 @@ init = function(sheet) {
         setupOrigine(npcSheet)
         setupJeunesse(npcSheet, 1)
         setupJeunesse(npcSheet, 2)
-
+        setupDisplayedBlessures(npcSheet)
         reputationListener(npcSheet, "inf")
         reputationListener(npcSheet, "glo")
 
