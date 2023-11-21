@@ -61,23 +61,6 @@ export function signal<T>(value: T): Signal<T> {
     return _signal;
 }
 
-export const editableLabel = function(editBtn: Component, label: Component, input: Component, labelContainer: Component, inputContainer: Component) {
-    editBtn.on("click", function() {
-        if(labelContainer.visible()) {
-            labelContainer.hide()
-            inputContainer.show()
-        } else {
-            labelContainer.show()
-            inputContainer.hide()
-        }
-    })
-    input.on("update", function(cmp) {
-        label.value(cmp.value())
-        labelContainer.show()
-        inputContainer.hide()
-    })
-}
-
 // Implémentation du pattern computed
 export const computed = function<T>(compute: () => T, dependencies: Signal<unknown>[] | Computed<unknown>[]): Computed<T> {
     const s = signal(compute());
@@ -97,6 +80,23 @@ export const effect = function(apply: () => void, dependencies: Signal<unknown>[
             apply()
         })
     }
+}
+
+export const editableLabel = function(editBtn: Component, label: Component, input: Component, labelContainer: Component, inputContainer: Component) {
+    editBtn.on("click", function() {
+        if(labelContainer.visible()) {
+            labelContainer.hide()
+            inputContainer.show()
+        } else {
+            labelContainer.show()
+            inputContainer.hide()
+        }
+    })
+    input.on("update", function(cmp) {
+        label.value(cmp.value())
+        labelContainer.show()
+        inputContainer.hide()
+    })
 }
 
 // Réinitialise tout les modificateurs temporaires à 0

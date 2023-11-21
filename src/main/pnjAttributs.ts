@@ -11,7 +11,7 @@ const handlePnjCompRoll = function(sheet: PnjSheet, title: string, selectedComp:
         if(selectedComp.metier) {
             expression += "1d20 <={1:2} " + target
         } else {
-            expression + "1d12 <={1:2} " + target
+            expression += "1d12 <={1:2} " + target
         }
     }
     if(selectedComp.attaque) {
@@ -23,7 +23,6 @@ const handlePnjCompRoll = function(sheet: PnjSheet, title: string, selectedComp:
         expression = "(" + expression + ")[attack,damage_" + intToWord(sheet.find("competences_repeater").find(selectedComp.id).find("degats_val").value()) + "]"
     }
     
-    log(expression)
     roll.expression(expression)
     roll.roll()
     sheet.selectedComp.set(undefined)

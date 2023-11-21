@@ -19,7 +19,7 @@ import { setupBretteurName, setupCompEscrimeDisplayEntry, setupCompEscrimeEditEn
 import { setupSequellesEditEntry } from "./personnage/sequelles"
 import { setupManoeuvreDisplayEntry, setupManoeuvreEditEntry } from "./escrime/manoeuvres"
 import { setupTraiteDisplayEntry, setupTraiteEditEntry } from "./escrime/traites"
-import { testNavire } from "./navire/navire"
+import { registreNavire } from "./navire/registre"
 import { navireSheet } from "./feuille/navireSheet"
 import { pnjSheet } from "./feuille/pnjSheet"
 import { setupCompetenceDisplayEntry, setupCompetenceEditEntry, setupInitiative } from "./competences/pnjCompetences"
@@ -120,7 +120,28 @@ init = function(sheet) {
     }  
     if(sheet.id() === "Navire") {
         const nSheet = navireSheet(sheet)
-        testNavire(nSheet)
+        const labels: string[] = [
+            "categorie",
+            "capitaine",
+            "tonnage",
+            "greement",
+            "canons",
+            "tirant",
+            "proue",
+            "manoeuvrabilite",
+            "immergee",
+            "hors_tout",
+            "equipe_actuel",
+            "equipe_maxi",
+            "mini_manoeuvre",
+            "mini_recharge",
+            "gardes",
+            "soldats"
+        ]
+        labels.forEach(function(label) {
+            registreNavire(nSheet, label)
+        })
+
     }
     if(sheet.id() === "PNJ") {
         const npcSheet = pnjSheet(sheet)

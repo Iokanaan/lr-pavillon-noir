@@ -38,7 +38,7 @@ export const setupCompetenceEditEntry = function(entry: Component) {
     const longFeuCmp = entry.find("long_feu") as Component<boolean>
     const longFeuLabelCmp = entry.find("long_feu_label") as Component<string>
 
-    if(degatsCmp.value() === undefined || degatsCmp.value() === null) {
+    if(entry.value()["degats"] === undefined) {
         degatsCmp.value(0)
     }
 
@@ -59,7 +59,9 @@ export const setupCompetenceEditEntry = function(entry: Component) {
     effect(function() {
         const choices = compToChoice(compByType[selectedType()])
         compCmpChoice.setChoices(choices)
-        compCmpChoice.value(Object.keys(choices)[0])
+        if(choices[compCmpChoice.value()] === undefined) {
+            compCmpChoice.value(Object.keys(choices)[0])
+        }
     }, [selectedType])
 
     typeCompCmp.on("update", function(cmp) {
@@ -118,12 +120,16 @@ export const setupCompetenceEditEntry = function(entry: Component) {
         }
     })
 
+    customModeCmp.on("update", function(cmp) {
+        customMode.set(cmp.value())
+    })
+
     customDisplay.on("click", function() {
-        customMode.set(true)
+        customModeCmp.value(true)
     })
 
     listDisplay.on("click", function() {
-        customMode.set(false)
+        customModeCmp.value(false)
     })
 
 
