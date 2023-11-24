@@ -26,6 +26,7 @@ import { setupCompetenceDisplayEntry, setupCompetenceEditEntry, setupInitiative 
 import { setupXp } from "./main/xp"
 import { setParametrage } from "./parametrage/parametrage"
 import { setupPnjAttribut } from "./main/pnjAttributs"
+import { convertisseur } from "./navire/convertisseur"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -120,6 +121,7 @@ init = function(sheet) {
     }  
     if(sheet.id() === "Navire") {
         const nSheet = navireSheet(sheet)
+        nSheet.find("navire_name").text(sheet.properName())
         const labels: string[] = [
             "categorie",
             "capitaine",
@@ -138,6 +140,7 @@ init = function(sheet) {
             "gardes",
             "soldats"
         ]
+        convertisseur(nSheet)
         labels.forEach(function(label) {
             registreNavire(nSheet, label)
         })
