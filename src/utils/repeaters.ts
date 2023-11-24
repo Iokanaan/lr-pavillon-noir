@@ -13,14 +13,15 @@
 
 
 export const setupRepeater = function(
-    sheet: PavillonSheet | PnjSheet,
+    sheet: PavillonSheet | PnjSheet | NavireSheet,
     repeaterId: string,
     setupEditEntry: ((entry: Component<any>) => void) | null,
     setupViewEntry: ((entry: Component<any>) => void) | null,
     onDelete: (((entryId: string) => void)) | null) {
-
     sheet.entryStates[repeaterId] = {}
+    log("entryState " + repeaterId)
     const repeater = sheet.raw().get(repeaterId)
+    log("found " + repeaterId)
     // On commence par exécuter le script des entry en mode VIEW au chargement de la feuille
     each(repeater.value(), function(_, entryId) {
         sheet.entryStates[repeaterId][entryId] = 'VIEW'
@@ -31,6 +32,7 @@ export const setupRepeater = function(
 
     // Gestion de l'initialisation du mode édition
     repeater.on('click', function(rep: Component<Record<string, unknown>>) {
+        log("review " + rep.id())
         reviewEntries(rep, sheet.entryStates[rep.id()], setupEditEntry, setupViewEntry)
         // On parcours le tableau pour vérifier si certains on disparus du repeater
         each(sheet.entryStates[repeaterId], function(_, entryId) {
@@ -64,10 +66,12 @@ const reviewEntries = function(
     setupViewEntry: ((entry: Component<any>) => void) | null) {
     each(rep.value(), function (_, entryId) {
         const entry = rep.find(entryId)
+        log("get mode");
         if(entry.find('mode').value() === 'EDIT') {
             // On init uniquement les entries qui n'était pas en mode EDIT avant
             if(entryStates[entryId] !== 'EDIT' && setupEditEntry !== null) {
                 // Initialisation de l'entry
+                log("run edit mode");
                 setupEditEntry(entry)
             }
             // L'entry est stockée en mode EDIT

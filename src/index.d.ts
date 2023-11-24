@@ -29,8 +29,35 @@ declare global {
     }
 
     type NavireSheet = {
-        test: Signal<number>,
+        entryStates: Record<string, Record<string, RepeaterState | undefined>>,
+        mature: {
+            artimon: Signal<boolean>,
+            misaine: Signal<boolean>,
+            mat: Signal<boolean>
+        },
+        armement: {
+            armementByEntry: Signal<Record<string, ArtillerieData>>
+        }
     }  & ExtendedSheet<NavireData>
+
+    type EmplacementArtillerie = "bordee" | "chasse" | "fuite" | "muraille"
+    type ZoneTirArtillerie = EmplacementArtillerie | "muraille_fuite" | "muraille_chasse"
+
+    type ArtillerieData = {
+        nom: string,
+        nb_canons: number,
+        calibre: string,
+        mitraille: number,
+        eff_canonnade: number,
+        fac_canonnade: number,
+        modif_recharge: number,
+        tonnage: number,
+        emplacement: EmplacementArtillerie,
+        tir_chasse: boolean,
+        tir_fuite: boolean,
+        nb_hommes: number,
+        portee_caronade: boolean
+    }
 
     type PnjSheet = {
         entryStates: Record<string, Record<string, RepeaterState | undefined>>,

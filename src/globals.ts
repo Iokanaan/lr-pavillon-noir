@@ -1,5 +1,6 @@
 export const globalSheets: Record<number, PavillonSheet> = {}
 export const globalPnjSheets: Record<number, PnjSheet> = {}
+export const globalNavireSheets: Record<number, NavireSheet> = {}
 
 export const optionalCompSlots: Record<string, number> = {
     "religion": 2,

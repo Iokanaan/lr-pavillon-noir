@@ -6,7 +6,7 @@ import { reputationListener } from "./main/reputation"
 import { setupRepeater } from "./utils/repeaters"
 import { setupDisplayedBlessures, setupSequelles } from "./combat/blessures"
 import { setupWeaponEditEntry, setupWeaponViewEntry } from "./combat/armes"
-import { globalPnjSheets, globalSheets, optionalCompSlots } from "./globals"
+import { globalNavireSheets, globalPnjSheets, globalSheets, optionalCompSlots } from "./globals"
 import { editableLabel } from "./utils/utils"
 import { setupAvantageDisplayEntity, setupAvantageEditEntry } from "./personnage/avantages"
 import { setupAttrSecondaires, setupValeurMetier } from "./competences/attibutsSecondaires"
@@ -27,6 +27,8 @@ import { setupXp } from "./main/xp"
 import { setParametrage } from "./parametrage/parametrage"
 import { setupPnjAttribut } from "./main/pnjAttributs"
 import { convertisseur } from "./navire/convertisseur"
+import { toggleMature } from "./navire/mature"
+import { setupArtillerieDisplayEntry, setupArtillerieEditEntry } from "./navire/artillerie"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -121,6 +123,7 @@ init = function(sheet) {
     }  
     if(sheet.id() === "Navire") {
         const nSheet = navireSheet(sheet)
+        globalNavireSheets[sheet.getSheetId()] = nSheet
         nSheet.find("navire_name").text(sheet.properName())
         const labels: string[] = [
             "categorie",
@@ -140,7 +143,12 @@ init = function(sheet) {
             "gardes",
             "soldats"
         ]
+        log("setup convertisseur")
         convertisseur(nSheet)
+        log("setup repeater")
+        setupRepeater(nSheet, "artillerie_repeater", setupArtillerieEditEntry, setupArtillerieDisplayEntry, null)
+        log("setup mature")
+        toggleMature(nSheet)
         labels.forEach(function(label) {
             registreNavire(nSheet, label)
         })
