@@ -54,6 +54,9 @@ export const valeurToMesure = function(valeur: number): string {
 export const mesureToValeur = function(mesure: number): string {
     let normalized = mesure;
     let nbIteration = 0
+    if(mesure <= 0) {
+        return "-"
+    }
     while(normalized > 0.8) {
         normalized = normalized / 10
         nbIteration++

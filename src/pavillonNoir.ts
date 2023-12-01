@@ -19,7 +19,7 @@ import { setupBretteurName, setupCompEscrimeDisplayEntry, setupCompEscrimeEditEn
 import { setupSequellesEditEntry } from "./personnage/sequelles"
 import { setupManoeuvreDisplayEntry, setupManoeuvreEditEntry } from "./escrime/manoeuvres"
 import { setupTraiteDisplayEntry, setupTraiteEditEntry } from "./escrime/traites"
-import { registreNavire } from "./navire/registre"
+import { registreNavire, setupEffects } from "./navire/registre"
 import { navireSheet } from "./feuille/navireSheet"
 import { pnjSheet } from "./feuille/pnjSheet"
 import { setupCompetenceDisplayEntry, setupCompetenceEditEntry, setupInitiative } from "./competences/pnjCompetences"
@@ -28,7 +28,8 @@ import { setParametrage } from "./parametrage/parametrage"
 import { setupPnjAttribut } from "./main/pnjAttributs"
 import { convertisseur } from "./navire/convertisseur"
 import { toggleMature } from "./navire/mature"
-import { setupArtillerieDisplayEntry, setupArtillerieEditEntry } from "./navire/artillerie"
+import { onArtillerieDelete, setupArtillerieDisplayEntry, setupArtillerieEditEntry, setupDegats, setupTonnageArtillerie } from "./navire/artillerie"
+import { setupCoque } from "./navire/coque"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -130,28 +131,27 @@ init = function(sheet) {
             "capitaine",
             "tonnage",
             "greement",
-            "canons",
             "tirant",
             "proue",
             "manoeuvrabilite",
             "immergee",
             "hors_tout",
-            "equipe_actuel",
             "equipe_maxi",
             "mini_manoeuvre",
-            "mini_recharge",
             "gardes",
-            "soldats"
+            "soldats",
+            "rmt"
         ]
-        log("setup convertisseur")
         convertisseur(nSheet)
-        log("setup repeater")
-        setupRepeater(nSheet, "artillerie_repeater", setupArtillerieEditEntry, setupArtillerieDisplayEntry, null)
-        log("setup mature")
+        setupRepeater(nSheet, "artillerie_repeater", setupArtillerieEditEntry, setupArtillerieDisplayEntry, onArtillerieDelete(nSheet))
         toggleMature(nSheet)
         labels.forEach(function(label) {
             registreNavire(nSheet, label)
         })
+        setupDegats(nSheet)
+        setupEffects(nSheet)
+        setupCoque(nSheet)
+        setupTonnageArtillerie(nSheet)
 
     }
     if(sheet.id() === "PNJ") {

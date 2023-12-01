@@ -42,6 +42,7 @@ declare global {
         get(elem: 'manoeuvres'): Table<ManoeuvreEntity>,
         get(elem: 'comp_pnj'): Table<CompetencePnjEntity>,
         get(elem: 'types_comp'): Table<TypeCompEntity>
+        get(elem: 'types_canons'): Table<TypeCanonEntity>
         get(id: string): Table
     }
     

@@ -28,6 +28,16 @@ declare global {
         foi: Signal<number>
     }
 
+    type TypeBouletEntity = {
+        id: string,
+        name: string
+    }
+
+    type TypeBoulet = {
+        id: string,
+        name: string
+    }
+
     type NavireSheet = {
         entryStates: Record<string, Record<string, RepeaterState | undefined>>,
         mature: {
@@ -36,7 +46,32 @@ declare global {
             mat: Signal<boolean>
         },
         armement: {
-            armementByEntry: Signal<Record<string, ArtillerieData>>
+            armementByEntry: Signal<Record<string, ArtillerieData>>,
+            typeBouletByEmplacement: Signal<Record<ZoneTirArtillerie, string>>,
+            tonnage: Computed<number>,
+            armementByEmplacement: Computed<Record<ZoneTirArtillerie, { nbCanons: number, degats: number, degatsValeur: string, pertes: number, pertesValeur: string, portee: string, nbHommes: number }>>,
+        },
+        equipage: {
+            miniManoeuvre: Signal<number>,
+            miniRecharge: Computed<number>,
+            maxi: Signal<number>,
+            actuel: Signal<number>
+        }
+        structure: {
+            maxCoque: Signal<number>,
+            maxMat: Signal<number>,
+            degatsMature: Computed<string>,
+            coque: {
+                tribord: { ps: Signal<number>, degats: Computed<string> },
+                babord: { ps: Signal<number>, degats: Computed<string> },
+                proue: { ps: Signal<number>, degats: Computed<string> },
+                poupe: { ps: Signal<number>, degats: Computed<string> },
+            },
+            mat: {
+                mat: { ps: Signal<number>, degats: Computed<string> },
+                artimon: { ps: Signal<number>, degats: Computed<string> },
+                misaine: { ps: Signal<number>, degats: Computed<string> },
+            }
         }
     }  & ExtendedSheet<NavireData>
 
@@ -47,7 +82,7 @@ declare global {
         nom: string,
         nb_canons: number,
         calibre: string,
-        mitraille: number,
+        pertes: string,
         eff_canonnade: number,
         fac_canonnade: number,
         modif_recharge: number,
@@ -403,6 +438,32 @@ declare global {
     type TypeComp = {
         id: string,
         name: string
+    }
+
+    type TypeCanonEntity = {
+        id: string,
+        name: string,
+        label: string,
+        calibre: string,
+        pertes: string,
+        tonnage: string,
+        nb_hommes: string,
+        eff_canonnade: string,
+        fac_canonnade: string,
+        recharge: string
+    }
+
+    type TypeCanon = {
+        id: string,
+        name: string,
+        label: string,
+        calibre: number,
+        pertes: number,
+        tonnage: number,
+        nb_hommes: number,
+        eff_canonnade: number,
+        fac_canonnade: number,
+        recharge: number
     }
 
     type LocalisationEnum = "tete" | "bras_droit" | "bras_gauche" | "torse" | "jambe_droite" | "jambe_gauche"

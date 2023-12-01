@@ -32,6 +32,21 @@ export const mapCompetencePnj = function(e: CompetencePnjEntity): CompetencePnj 
     }
 }
 
+export const mapTypeCanon = function(e: TypeCanonEntity): TypeCanon {
+    return {
+        id: e.id,
+        name: e.name,
+        label: e.label,
+        calibre: +(e.calibre),
+        pertes: +(e.pertes),
+        nb_hommes: parseInt(e.nb_hommes),
+        tonnage: +(e.tonnage),
+        recharge: parseInt(e.recharge),
+        eff_canonnade: parseInt(e.eff_canonnade),
+        fac_canonnade: parseInt(e.fac_canonnade)       
+    }
+}
+
 export const mapWeaponEntity = function(e: WeaponEntity): Weapon {
     return {
         id: e.id,
