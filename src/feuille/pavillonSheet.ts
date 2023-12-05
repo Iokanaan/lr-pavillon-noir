@@ -172,6 +172,12 @@ export const pavillonSheet = function(sheet: Sheet) {
     _pSheet.params = {}
     _pSheet.params.excludeLongFeu = signal(sheet.get("exclude_long_feu").value())
 
+    // Journal
+    _pSheet.journal = signal({} as Record<string, unknown>)
+    _pSheet.journalPageSize = signal(sheet.get("page_size").value())
+    _pSheet.journalMaxPage = computed(function() {
+        return Math.ceil(Object.keys(_pSheet.journal()).length / _pSheet.journalPageSize())
+    }, [_pSheet.journal, _pSheet.journalPageSize])
     return _pSheet as PavillonSheet
 }
 

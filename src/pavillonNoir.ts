@@ -30,6 +30,7 @@ import { convertisseur } from "./navire/convertisseur"
 import { toggleMature } from "./navire/mature"
 import { onArtillerieDelete, setupArtillerieDisplayEntry, setupArtillerieEditEntry, setupDegats, setupTonnageArtillerie } from "./navire/artillerie"
 import { setupCoque } from "./navire/coque"
+import { onJournalDelete, setupJournalDisplayEntry, setupJournalPagination } from "./journal/journal"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -121,10 +122,31 @@ init = function(sheet) {
         setupXp(pSheet)
 
         setParametrage(pSheet)
+
+        setupRepeater(pSheet, "journal_repeater", null, setupJournalDisplayEntry, onJournalDelete(pSheet))
+        setupJournalPagination(pSheet)
     }  
     if(sheet.id() === "Navire") {
         const nSheet = navireSheet(sheet)
         globalNavireSheets[sheet.getSheetId()] = nSheet
+        nSheet.find("navire_row").show()
+        nSheet.find("equipage_row").hide()
+        nSheet.find("equipage_tab").on("click", function(cmp) {
+            nSheet.find("equipage_row").show()
+            nSheet.find("navire_row").hide()
+            cmp.addClass("bg-light")
+            cmp.addClass("text-dark")
+            nSheet.find("navire_tab").removeClass("bg-light")
+            nSheet.find("navire_tab").removeClass("text-dark")
+        })
+        nSheet.find("navire_tab").on("click", function(cmp) {
+            nSheet.find("equipage_row").hide()
+            nSheet.find("navire_row").show()
+            cmp.addClass("bg-light")
+            cmp.addClass("text-dark")
+            nSheet.find("equipage_tab").removeClass("bg-light")
+            nSheet.find("equipage_tab").removeClass("text-dark")
+        })
         nSheet.find("navire_name").text(sheet.properName())
         const labels: string[] = [
             "categorie",

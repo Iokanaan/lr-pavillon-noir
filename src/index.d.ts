@@ -171,7 +171,10 @@ declare global {
         voies: Voie[],
         params: {
             excludeLongFeu: signal<boolean>
-        }
+        },
+        journal: Signal<Record<string, unknown>>,
+        journalPageSize: Signal<number>,
+        journalMaxPage: Computed<number>
     } & ExtendedSheet<CharData>
 
     type Competence = {
