@@ -31,6 +31,8 @@ import { toggleMature } from "./navire/mature"
 import { onArtillerieDelete, setupArtillerieDisplayEntry, setupArtillerieEditEntry, setupDegats, setupTonnageArtillerie } from "./navire/artillerie"
 import { setupCoque } from "./navire/coque"
 import { onJournalDelete, setupJournalDisplayEntry, setupJournalPagination } from "./journal/journal"
+import { selectGestionComps } from "./equipage/gestion"
+import { setDetailCompetenceGroup } from "./equipage/comptencesGroupe"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -174,6 +176,9 @@ init = function(sheet) {
         setupEffects(nSheet)
         setupCoque(nSheet)
         setupTonnageArtillerie(nSheet)
+
+        selectGestionComps(nSheet)
+        setDetailCompetenceGroup(nSheet)
 
     }
     if(sheet.id() === "PNJ") {
