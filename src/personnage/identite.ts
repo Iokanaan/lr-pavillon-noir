@@ -197,7 +197,6 @@ export const setupJeunesse = function(sheet: PavillonSheet | PnjSheet, num: numb
 
     // Affichage du mode édition au clic
     jeunesseTitleCmp.on("click", function() {
-        log("click")
         if(jeunesseRowCmp.visible()) {
             jeunesseRowCmp.hide()
             changeJeunesseRowCmp.show()

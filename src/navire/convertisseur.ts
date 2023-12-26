@@ -61,7 +61,6 @@ export const mesureToValeur = function(mesure: number): string {
         normalized = normalized / 10
         nbIteration++
     }
-    log(normalized)
     let valeur = -10
     for(let i=0; i<table.length; i++) {
         if(normalized <= table[i]) {

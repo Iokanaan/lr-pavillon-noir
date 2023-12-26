@@ -72,9 +72,15 @@ declare global {
                 artimon: { ps: Signal<number>, degats: Computed<string> },
                 misaine: { ps: Signal<number>, degats: Computed<string> },
             }
+        },
+        feuilleEquipage: {
+            commandement: Record<PosteBord, Record<string, Signal<number>>>,
+            gestion: Record<string, Record<string, Record<"efficacite"|"facilite", Signal<number>>>>,
+            competencesGroupe: Record<string, Record<"efficacite" | "facilite" | "modif_matelot", Computed<number>>>
         }
     }  & ExtendedSheet<NavireData>
 
+    type PosteBord = "capitaine" | "second" | "canonnier" | "mcanonnier" | "mequipage" | "qmaitre"
     type EmplacementArtillerie = "bordee" | "chasse" | "fuite" | "muraille"
     type ZoneTirArtillerie = EmplacementArtillerie | "muraille_fuite" | "muraille_chasse"
 
@@ -483,7 +489,7 @@ declare global {
         "conn_specialisee_1" |
         "conn_specialisee_2" |
         "herboristerie" |
-        "ingenierie_navale" |
+        "ing_navale" |
         "intendance" |
         "lire_ecire" |
         "medecine" |
@@ -505,8 +511,8 @@ declare global {
         "chirurgie" |
         "dressage" |
         "premiers_soins" |
-        "connaissances_nautiques" |
-        "connaissances_navires" |
+        "conn_nautiques" |
+        "conn_navires" |
         "connaissances_signalisation" |
         "hydrographie" |
         "navigation" |
@@ -531,10 +537,10 @@ declare global {
         "empathie" |
         "enseignement" |
         "etiquette" |
-        "intidimidation" |
+        "intimidation" |
         "jeu" |
         "langue_etrangere" |
-        "meuneur_hommes" |
+        "meneur_hommes" |
         "persuasion" |
         "politique" |
         "seduction" |

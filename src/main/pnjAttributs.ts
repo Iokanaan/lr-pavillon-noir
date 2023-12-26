@@ -5,6 +5,7 @@ const handlePnjCompRoll = function(sheet: PnjSheet, title: string, selectedComp:
     nDice += parseInt(sheet.find("competences_repeater").find(selectedComp.id).find("modifier").value())
     const roll = new RollBuilder(sheet.raw()).title(title)
     let expression = ""
+    const rollTags =  "eff_" + intToWord(nDice) + ",fac_" + intToWord(target) 
     if(nDice > 0) {
         expression += nDice + "d10 <={1:2} " + target
     } else {
@@ -20,7 +21,9 @@ const handlePnjCompRoll = function(sheet: PnjSheet, title: string, selectedComp:
             expression += " + (1d20 > " + sheet.find("competences_repeater").find(selectedComp.id).find("long_feu_val").value() + ")[long_feu]"
         }
         expression += " + 1d6[localisation]"
-        expression = "(" + expression + ")[attack,damage_" + intToWord(sheet.find("competences_repeater").find(selectedComp.id).find("degats_val").value()) + "]"
+        expression = "(" + expression + ")[attack,damage_" + intToWord(sheet.find("competences_repeater").find(selectedComp.id).find("degats_val").value()) + "," + rollTags + "]"
+    } else {
+        expression = "(" + expression + ")[" + rollTags + "]"
     }
     
     roll.expression(expression)
@@ -32,7 +35,6 @@ export const setupPnjAttribut = function(sheet: PnjSheet, attr: Attribut) {
     sheet.find(attr.id + "_label").on("click", function(cmp) {
         let target = sheet.find(attr.id + "_val").value() as number 
         const selectedComp = sheet.selectedComp()
-        log(sheet.blessures.general.malus())
         if(selectedComp !== undefined) {
             if(selectedComp.category !== "connaissances") {
                 target -= sheet.blessures.general.malus()
@@ -65,8 +67,9 @@ export const setupPnjAttribut = function(sheet: PnjSheet, attr: Attribut) {
 }
 
 const handleAttrRoll = function(sheet: PavillonSheet | PnjSheet, title: string, target: number) {
+    const tags =  "[eff_" + intToWord(2) + ",fac_" + intToWord(target) + "]"
     new RollBuilder(sheet.raw())
         .title(title)
-        .expression("2d10 <={1:2} " + target)
+        .expression("(2d10 <={1:2} " + target + ")" + tags)
         .roll()
 }

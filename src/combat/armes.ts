@@ -244,7 +244,7 @@ export const setupWeaponViewEntry = function(entry: Component<WeaponData>) {
             expression += " + (1d20 > " + virtualLongFeu() + ")[long_feu]"
         }
         expression += " + 1d6[localisation]"
-        expression = "(" + expression + ")[attack," + "damage_" + intToWord(virtualDamage()) + "]"
+        expression = "(" + expression + ")[attack," + "damage_" + intToWord(virtualDamage()) + ",eff_" + intToWord(virtualComp()) + ",fac_" + intToWord(virtualAttr()) + "]"
         new RollBuilder(entry.sheet()).title(cmp.text()).expression(expression).roll()
     })
 }

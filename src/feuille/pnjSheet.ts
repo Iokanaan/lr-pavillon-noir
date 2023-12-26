@@ -12,8 +12,6 @@ export const pnjSheet = function(sheet: Sheet) {
     // Caractéristiques / compétences
     const compSignals: any = {}
     each((sheet.get("competences_repeater") as Component<Record<string, CompPnjData>>).value(), function(val, id) {
-        log(sheet.get("competences_repeater").find(id))
-        log(val)
         compSignals[val.comp] = signal(sheet.get("competences_repeater").find(id).value().comp)
     })
     _pSheet.comp = compSignals

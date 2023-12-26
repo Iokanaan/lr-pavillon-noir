@@ -4,6 +4,11 @@ import { handleSequelle } from "./sequelles"
 
 export const resultCallback = function(result: DiceResult) {
     return function(sheet: Sheet<unknown>) {
+        const eff = parseIntTag(result.allTags, /eff_/)
+        const fac = parseIntTag(result.allTags, /fac_/)
+        if(eff !== undefined && fac !== undefined) {
+            sheet.get("formule").text(eff + " F " + fac)
+        }
         if(result.containsTag("initiative")) {
             sheet.get("result").text(result.total.toString())
         // Gestion des jets d'attaque

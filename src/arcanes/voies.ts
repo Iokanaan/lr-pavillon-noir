@@ -8,7 +8,6 @@ export const pouvoirsSacres = function(sheet: PavillonSheet, num: number) {
     
     effect(function() {
         if(sheet.typeArcane() !== null && sheet.typeArcane() !== undefined) {
-            log(sheet.typeArcane())
             sheet.find("foi_titre_" + num).value(_(Tables.get("rangs_foi").get(sheet.voies[num - 1].rangFoi().toString())[sheet.typeArcane()]))
         }
     }, [sheet.voies[num - 1].rangFoi, sheet.typeArcane])

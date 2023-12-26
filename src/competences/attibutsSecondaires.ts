@@ -1,4 +1,4 @@
-import { effect } from "../utils/utils";
+import { effect, intToWord } from "../utils/utils";
 
 export const setupAttrSecondaires = function(sheet: PavillonSheet) {
 
@@ -11,7 +11,9 @@ export const setupAttrSecondaires = function(sheet: PavillonSheet) {
     // Lancement du dé sur la mise à jour de la facilité
     (sheet.find("chance_facilite_input") as Component<string>).on("update", function(cmp) {
         if(/^[0-9]*$/.test(cmp.value())) {
-            new RollBuilder(sheet.raw()).expression("1d10 <=1 " + (parseInt(cmp.value()) + sheet.chance())).roll()
+            const eff = 1
+            const fac = parseInt(cmp.value()) + sheet.chance()
+            new RollBuilder(sheet.raw()).expression("(" + eff + "d10 <= " + fac + ")[eff_" + intToWord(eff) + ",fac_" + intToWord(fac) + "]").roll()
             sheet.find("chance_facilite_row").hide()
             sheet.find("chance_facilite_input").value(null)
             sheet.find("chance_label").show()

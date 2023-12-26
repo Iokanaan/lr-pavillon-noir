@@ -168,7 +168,6 @@ export const setupCompetenceDisplayEntry = function(entry: Component<CompPnjData
     labelCmp.on("click", function(cmp) {
         const selectedComp = sheet.selectedComp()
         if(selectedComp === undefined || selectedComp.id !== entry.id()) {
-            log("select comp")
             sheet.selectedComp.set({
                 name:cmp.text(), 
                 id:entry.id(), 
@@ -178,7 +177,6 @@ export const setupCompetenceDisplayEntry = function(entry: Component<CompPnjData
                 feu: entry.value().long_feu
             })
         } else {
-            log("select undef")
             sheet.selectedComp.set(undefined)
         }
     })

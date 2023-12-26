@@ -1,5 +1,60 @@
 import { effect } from "../utils/utils"
 
+
+export const setupEtatMature = function(sheet: NavireSheet) {
+    
+    sheet.find("structure_mat_title").on("click", function(cmp) {
+        if(sheet.find("structure_mat_label").visible()) {
+            sheet.find("structure_mat_label").hide()
+            sheet.find("structure_mat_input").show()
+        } else {
+            sheet.find("structure_mat_label").show()
+            sheet.find("structure_mat_input").hide()
+        }
+    })
+
+    sheet.find("structure_mat_input").on("update", function(cmp) {
+        cmp.hide()
+        sheet.find("structure_mat_label").show()
+        if(cmp.value() !== "") {
+            sheet.find("structure_mat_label").value(cmp.value())
+        } else {
+            sheet.find("structure_mat_label").value(" ")
+        }
+        sheet.structure.maxMat.set(+(cmp.value() as string))
+    })
+
+    sheet.find("reset_mat").on("click", function() {
+        sheet.find("structure_grand_mat_input").value(sheet.structure.maxMat())
+        sheet.find("structure_artimon_input").value(sheet.structure.maxMat())
+        sheet.find("structure_misaine_input").value(sheet.structure.maxMat())
+    })
+
+    effect(function() {
+        sheet.find("degats_artimon").value(sheet.structure.mat.artimon.degats())
+    }, [sheet.structure.mat.artimon.degats])
+    effect(function() {
+        sheet.find("degats_misaine").value(sheet.structure.mat.misaine.degats())
+    }, [sheet.structure.mat.misaine.degats])
+    effect(function() {
+        sheet.find("degats_mat").value(sheet.structure.mat.mat.degats())
+    }, [sheet.structure.mat.mat.degats])
+
+    sheet.find("structure_misaine_input").on("update", function(cmp) {
+        sheet.structure.mat.misaine.ps.set(cmp.value() as number)
+    })
+    sheet.find("structure_artimon_input").on("update", function(cmp) {
+        sheet.structure.mat.artimon.ps.set(cmp.value() as number)
+    })
+    sheet.find("structure_grand_mat_input").on("update", function(cmp) {
+        sheet.structure.mat.mat.ps.set(cmp.value() as number)
+    })
+
+    effect(function() {
+        sheet.find("etat_mature_label").value(sheet.structure.degatsMature())
+    }, [sheet.structure.degatsMature])
+}
+
 export const toggleMature = function(sheet: NavireSheet) {
 
     const useMisaineCmp = sheet.find("use_misaine") as Component<boolean>

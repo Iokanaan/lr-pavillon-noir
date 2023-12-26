@@ -1,6 +1,6 @@
 import { pavillonSheet } from "./feuille/pavillonSheet"
 import { getOptionalCompType, setupComps, setupOptionalGroup } from "./competences/competences"
-import { setupAttribut } from "./main/attributs"
+import { setupAttribut, setupFastRoll } from "./main/attributs"
 import { setupBaseDescription, setupJeunesse, setupOrigine, setupPeuple, setupProfession, setupReligion, setupTitre } from "./personnage/identite"
 import { reputationListener } from "./main/reputation"
 import { setupRepeater } from "./utils/repeaters"
@@ -27,12 +27,13 @@ import { setupXp } from "./main/xp"
 import { setParametrage } from "./parametrage/parametrage"
 import { setupPnjAttribut } from "./main/pnjAttributs"
 import { convertisseur } from "./navire/convertisseur"
-import { toggleMature } from "./navire/mature"
+import { setupEtatMature, toggleMature } from "./navire/mature"
 import { onArtillerieDelete, setupArtillerieDisplayEntry, setupArtillerieEditEntry, setupDegats, setupTonnageArtillerie } from "./navire/artillerie"
 import { setupCoque } from "./navire/coque"
 import { onJournalDelete, setupJournalDisplayEntry, setupJournalPagination } from "./journal/journal"
-import { selectGestionComps } from "./equipage/gestion"
-import { setDetailCompetenceGroup } from "./equipage/comptencesGroupe"
+import { selectGestionComps, setupGestionSignalUpdates } from "./equipage/gestion"
+import { displayValues, setDetailCompetenceGroup, setupCompGroupeRolls } from "./equipage/comptencesGroupe"
+import { setupSignalUpdates } from "./equipage/commandement"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -59,6 +60,7 @@ init = function(sheet) {
             Tables.get("attributs").each(function(attr: AttributEntity) {
                 setupAttribut(pSheet, attr)
             })
+            setupFastRoll(pSheet)
             setupValeurMetier(pSheet)
             setupComps(pSheet)
             each(optionalCompSlots, function(val, key) {
@@ -168,6 +170,7 @@ init = function(sheet) {
         ]
         convertisseur(nSheet)
         setupRepeater(nSheet, "artillerie_repeater", setupArtillerieEditEntry, setupArtillerieDisplayEntry, onArtillerieDelete(nSheet))
+        setupEtatMature(nSheet)
         toggleMature(nSheet)
         labels.forEach(function(label) {
             registreNavire(nSheet, label)
@@ -176,10 +179,12 @@ init = function(sheet) {
         setupEffects(nSheet)
         setupCoque(nSheet)
         setupTonnageArtillerie(nSheet)
-
+        setupSignalUpdates(nSheet)
+        setupGestionSignalUpdates(nSheet)
         selectGestionComps(nSheet)
         setDetailCompetenceGroup(nSheet)
-
+        displayValues(nSheet)
+        setupCompGroupeRolls(nSheet)
     }
     if(sheet.id() === "PNJ") {
         const npcSheet = pnjSheet(sheet)
@@ -209,7 +214,7 @@ init = function(sheet) {
 }
 
 getCriticalHits = function(result) {
-    return {
+    const hits = {
         "20": {
             "critical": [1],
             "fumble": [20],
@@ -222,5 +227,9 @@ getCriticalHits = function(result) {
             "critical": [1],
             "fumble": [12]
         }
+    } as any
+    if(result.allTags.indexOf("localisation") !== -1) {
+        hits["6"] = {"yellow":[1,2,3,4,5,6]}
     }
+    return hits
 }

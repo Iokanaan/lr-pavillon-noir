@@ -1,3 +1,4 @@
+import { competencesGroupe, gestion, postes } from "../globals"
 import { mesureToValeur } from "../navire/convertisseur"
 import { computed, intToWord, signal } from "../utils/utils"
 
@@ -17,7 +18,58 @@ export const navireSheet = function(sheet: Sheet) {
     _pSheet.armement = buildArmement(sheet)
     _pSheet.equipage = buildEquipage(sheet, _pSheet.armement.armementByEmplacement)
     _pSheet.structure = buildStructure(sheet)
+    _pSheet.feuilleEquipage = buildFeuilleEquipage(sheet)
     return _pSheet as NavireSheet
+}
+
+const avgSignals = function(data: Signal<number>[]) {
+    return function() {
+        let acc = 0;
+        for(let i=0; i<data.length; i++) {
+            acc += data[i]()
+        }
+        return Math.ceil(acc / data.length)
+    }
+
+}
+
+const buildFeuilleEquipage = function(sheet: Sheet) {
+    const feuilleEquipage = {} as any
+
+    feuilleEquipage.commandement = {}
+    each(postes, function(comps, poste) {
+        feuilleEquipage.commandement[poste] = {}
+        feuilleEquipage.commandement[poste].metier = signal(sheet.get("metier_" + poste + "_val").value() as number)
+        for(let i=0; i<comps.length;i++) {
+            feuilleEquipage.commandement[poste][comps[i]] = signal(sheet.get(poste + "_" + comps[i] + "_val").value() as number)
+        }
+    })
+
+    feuilleEquipage.gestion = {}
+    each(gestion, function(comps, poste) {
+        feuilleEquipage.gestion[poste] = {}
+        for(let i=0; i<comps.length;i++) {
+            feuilleEquipage.gestion[poste][comps[i]] = {}
+            feuilleEquipage.gestion[poste][comps[i]].efficacite = signal(sheet.get(poste + "_" + comps[i] + "_val").value() as number)
+            feuilleEquipage.gestion[poste][comps[i]].facilite = signal(sheet.get(poste + "_" + comps[i] + "_fac").value() as number)
+        }
+    })
+    feuilleEquipage.competencesGroupe = {}
+    each(competencesGroupe, function(roles, key) {
+        const dependenciesEff: Signal<number>[] = []
+        const dependenciesFac: Signal<number>[] = []
+        feuilleEquipage.competencesGroupe[key] = {}
+        each(roles, function(comps, role) {
+            for(let i=0;i<comps.length; i++) {
+                dependenciesEff.push(feuilleEquipage.commandement[role][comps[i]])
+                dependenciesFac.push(feuilleEquipage.commandement[role].metier)
+            }
+        })
+        feuilleEquipage.competencesGroupe[key].efficacite = computed(avgSignals(dependenciesEff), dependenciesEff)
+        feuilleEquipage.competencesGroupe[key].facilite = computed(avgSignals(dependenciesFac), dependenciesFac)
+        feuilleEquipage.competencesGroupe[key].modif_matelot = computed(function(){ return feuilleEquipage.competencesGroupe[key].efficacite() - 3 }, [feuilleEquipage.competencesGroupe[key].efficacite])
+    })
+    return feuilleEquipage
 }
 
 const buildStructure = function(sheet: Sheet) {
@@ -33,7 +85,6 @@ const buildStructure = function(sheet: Sheet) {
 
     const degatProcessor = function(actual: number, max: number) {
         const ratio = actual / max
-        log(ratio)
         if(ratio >= 1) {
             return "Intact"
         }
@@ -223,7 +274,6 @@ const buildArmement = function(sheet: Sheet) {
                     break;
             }
         })
-        log(cal)
         return cal
     }, [armementByEntry, typeBouletByEmplacement]) 
     const tonnage = computed(function() {

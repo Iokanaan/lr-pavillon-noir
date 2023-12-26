@@ -46,7 +46,6 @@ export const setupJournalPagination = function(sheet: PavillonSheet) {
     effect(function() {
         const repeater = sheet.find("journal_repeater") as Component<Record<string, unknown>>
         const keys = Object.keys(sheet.journal())
-        log(keys)
         for(let i=0; i<keys.length; i++) {
             const item = repeater.find(keys[i])
             if(i < numPage() * sheet.journalPageSize() && i >= (numPage() - 1) * sheet.journalPageSize()) {
