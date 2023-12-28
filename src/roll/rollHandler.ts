@@ -1,5 +1,6 @@
 import { wordToInt } from "../utils/utils"
 import { handleAttack } from "./attack"
+import { handleCanonnade } from "./canonnade"
 import { handleSequelle } from "./sequelles"
 
 export const resultCallback = function(result: DiceResult) {
@@ -17,6 +18,9 @@ export const resultCallback = function(result: DiceResult) {
         // Gestion des jets de séquelle
         } else if(result.containsTag("sequelle")) {
             handleSequelle(sheet, result)
+        // Gestion canonnade
+        } else if(result.containsTag("localisation_navire")) {
+            handleCanonnade(sheet, result)
         // Gestion par défaut
         } else {
             sheet.get("result").text(result.total.toString() + " succès")

@@ -33,6 +33,31 @@ export const convertisseur = function(sheet: NavireSheet) {
             }
         }
     })
+
+    sheet.find("plus_col").on("click", function() {
+        let valeur = +(valeurInputCmp.value())
+        if(!Number.isNaN(valeur)) {
+            valeurInputCmp.value((valeur + 1).toString())
+        }
+    })
+    sheet.find("min_col").on("click", function() {
+        let valeur = +(valeurInputCmp.value())
+        if(!Number.isNaN(valeur)) {
+            valeurInputCmp.value((valeur - 1).toString())
+        }
+    })
+    sheet.find("plus_line").on("click", function() {
+        let valeur = +(valeurInputCmp.value())
+        if(!Number.isNaN(valeur)) {
+            valeurInputCmp.value((valeur + 10).toString())
+        }
+    })
+    sheet.find("min_line").on("click", function() {
+        let valeur = +(valeurInputCmp.value())
+        if(!Number.isNaN(valeur)) {
+            valeurInputCmp.value((valeur - 10).toString())
+        }
+    })
 }
 
 export const valeurToMesure = function(valeur: number): string {

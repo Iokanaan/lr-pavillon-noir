@@ -32,8 +32,9 @@ import { onArtillerieDelete, setupArtillerieDisplayEntry, setupArtillerieEditEnt
 import { setupCoque } from "./navire/coque"
 import { onJournalDelete, setupJournalDisplayEntry, setupJournalPagination } from "./journal/journal"
 import { selectGestionComps, setupGestionSignalUpdates } from "./equipage/gestion"
-import { displayValues, setDetailCompetenceGroup, setupCompGroupeRolls } from "./equipage/comptencesGroupe"
+import { displayValues } from "./equipage/comptencesGroupe"
 import { setupSignalUpdates } from "./equipage/commandement"
+import { gestionNombre } from "./equipage/nombre"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -182,9 +183,8 @@ init = function(sheet) {
         setupSignalUpdates(nSheet)
         setupGestionSignalUpdates(nSheet)
         selectGestionComps(nSheet)
-        setDetailCompetenceGroup(nSheet)
         displayValues(nSheet)
-        setupCompGroupeRolls(nSheet)
+        gestionNombre(nSheet)
     }
     if(sheet.id() === "PNJ") {
         const npcSheet = pnjSheet(sheet)
@@ -228,7 +228,7 @@ getCriticalHits = function(result) {
             "fumble": [12]
         }
     } as any
-    if(result.allTags.indexOf("localisation") !== -1) {
+    if(result.allTags.indexOf("localisation") !== -1 || result.allTags.indexOf("localisation_navire") !== -1) {
         hits["6"] = {"yellow":[1,2,3,4,5,6]}
     }
     return hits

@@ -1,7 +1,7 @@
 import { globalSheets, optionalCompSlots } from "../globals"
 import { hasMalusArmeAFeu } from "../main/attributs"
 import { mapWeaponEntity } from "../utils/mappers"
-import { computed, effect, intToWord, signal } from "../utils/utils"
+import { computed, effect, intToWord, setVirtualColor, setVirtualColorReverse, signal } from "../utils/utils"
 
 
 // Converti les competences d'arme en choix pour repeater
@@ -13,33 +13,7 @@ const compArmeToChoices = function(comptences: Table<CompetenceCombatEntity>) {
     return choices
 }
 
-// Applique une couleur si modificateur
-const setVirtualColor = function(cmp: Component<string>, refValue: number) {
-    if(parseInt(cmp.value()) > refValue) {
-        cmp.addClass("text-success")
-        cmp.removeClass("text-danger")
-    } else if(parseInt(cmp.value()) < refValue) {
-        cmp.removeClass("text-success")
-        cmp.addClass("text-danger")       
-    } else {
-        cmp.removeClass("text-success")
-        cmp.removeClass("text-danger")
-    }
-}
 
-// Fonction inverse, baisser la valeur affiche vert
-const setVirtualColorReverse = function(cmp: Component<string>, refValue: number) {
-    if(parseInt(cmp.value()) < refValue) {
-        cmp.addClass("text-success")
-        cmp.removeClass("text-danger")
-    } else if(parseInt(cmp.value()) > refValue) {
-        cmp.removeClass("text-success")
-        cmp.addClass("text-danger")       
-    } else {
-        cmp.removeClass("text-success")
-        cmp.removeClass("text-danger")
-    }
-}
 
 
 // Fonction appelée à l'affichage d'une arme

@@ -154,3 +154,58 @@ export const setVirtualBgReverse = function(cmp: Component<number>) {
         cmp.removeClass("bg-danger")
     }
 }
+
+export const setVirtualColor = function(cmp: Component<string>, refValue: number) {
+    if(parseInt(cmp.value()) > refValue) {
+        cmp.addClass("text-success")
+        cmp.removeClass("text-danger")
+    } else if(parseInt(cmp.value()) < refValue) {
+        cmp.removeClass("text-success")
+        cmp.addClass("text-danger")       
+    } else {
+        cmp.removeClass("text-success")
+        cmp.removeClass("text-danger")
+    }
+}
+
+// Fonction inverse, baisser la valeur affiche vert
+export const setVirtualColorReverse = function(cmp: Component<string>, refValue: number) {
+    if(parseInt(cmp.value()) < refValue) {
+        cmp.addClass("text-success")
+        cmp.removeClass("text-danger")
+    } else if(parseInt(cmp.value()) > refValue) {
+        cmp.removeClass("text-success")
+        cmp.addClass("text-danger")       
+    } else {
+        cmp.removeClass("text-success")
+        cmp.removeClass("text-danger")
+    }
+}
+
+export const setVirtualColorFromSignal = function(cmp: Component<string>, refValue: Signal<number> | Computed<number>) {
+    if(parseInt(cmp.value()) > refValue()) {
+        cmp.addClass("text-success")
+        cmp.removeClass("text-danger")
+    } else if(parseInt(cmp.value()) < refValue()) {
+        cmp.removeClass("text-success")
+        cmp.addClass("text-danger")       
+    } else {
+        cmp.removeClass("text-success")
+        cmp.removeClass("text-danger")
+    }
+}
+
+// Fonction inverse, baisser la valeur affiche vert
+export const setVirtualColorReverseFromSignal = function(cmp: Component<string>, refValue: Signal<number> | Computed<number>) {
+    if(parseInt(cmp.value()) < refValue()) {
+        cmp.addClass("text-success")
+        cmp.removeClass("text-danger")
+    } else if(parseInt(cmp.value()) > refValue()) {
+        cmp.removeClass("text-success")
+        cmp.addClass("text-danger")       
+    } else {
+        cmp.removeClass("text-success")
+        cmp.removeClass("text-danger")
+    }
+}
+

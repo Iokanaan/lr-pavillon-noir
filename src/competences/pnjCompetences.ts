@@ -1,6 +1,6 @@
 import { globalPnjSheets } from "../globals";
 import { mapCompetencePnj } from "../utils/mappers";
-import { effect, signal } from "../utils/utils";
+import { effect, setVirtualColor, setVirtualColorReverse, signal } from "../utils/utils";
 
 export const setupInitiative = function(sheet: PnjSheet) {
     const initiativeValCmp = sheet.find("initiative_val") as Component<string>
@@ -291,29 +291,3 @@ export const setupCompetenceDisplayEntry = function(entry: Component<CompPnjData
 
 }
 
-const setVirtualColor = function(cmp: Component<string>, refValue: number) {
-    if(parseInt(cmp.value()) > refValue) {
-        cmp.addClass("text-success")
-        cmp.removeClass("text-danger")
-    } else if(parseInt(cmp.value()) < refValue) {
-        cmp.removeClass("text-success")
-        cmp.addClass("text-danger")       
-    } else {
-        cmp.removeClass("text-success")
-        cmp.removeClass("text-danger")
-    }
-}
-
-// Fonction inverse, baisser la valeur affiche vert
-const setVirtualColorReverse = function(cmp: Component<string>, refValue: number) {
-    if(parseInt(cmp.value()) < refValue) {
-        cmp.addClass("text-success")
-        cmp.removeClass("text-danger")
-    } else if(parseInt(cmp.value()) > refValue) {
-        cmp.removeClass("text-success")
-        cmp.addClass("text-danger")       
-    } else {
-        cmp.removeClass("text-success")
-        cmp.removeClass("text-danger")
-    }
-}

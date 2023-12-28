@@ -1,59 +1,49 @@
 import { competencesGroupe } from "../globals"
-import { effect, intToWord, signal } from "../utils/utils"
-
-export const setDetailCompetenceGroup = function(sheet: NavireSheet) {
-
-    sheet.find("display_detail_combat").on("click", handleDisplayBloc(sheet, "combat"))
-    sheet.find("display_detail_tir").on("click", handleDisplayBloc(sheet, "combat"))
-    sheet.find("display_detail_manoeuvre").on("click", handleDisplayBloc(sheet, "manoeuvre"))
-    sheet.find("display_detail_habilete").on("click", handleDisplayBloc(sheet, "habilete"))
-    sheet.find("display_detail_ruse").on("click", handleDisplayBloc(sheet, "ruse"))
-    sheet.find("display_detail_canonnade").on("click", handleDisplayBloc(sheet, "canonnade"))
-    sheet.find("display_detail_recharge").on("click", handleDisplayBloc(sheet, "recharge"))
-
-}
+import { effect, intToWord, setVirtualColorFromSignal } from "../utils/utils"
 
 const handleDisplayBloc = function(sheet: NavireSheet, bloc: string) {
     return function() {
-        const blocs: Record<string, Component> = {
-            "combat": sheet.find("combat_detail_row"),
-            "manoeuvre": sheet.find("manoeuvre_detail_row"),
-            "habilete": sheet.find("habilete_detail_row"),
-            "ruse": sheet.find("ruse_detail_row"),
-            "canonnade": sheet.find("canonnade_detail_row"),
-            "recharge": sheet.find("recharge_detail_row"),
-        }
-        each(blocs, function(cmp, key) {
+        each(competencesGroupe, function(_, key) {
             if(key === bloc) {
-                cmp.show()
+                sheet.find(key + "_detail_row").show()
             } else {
-                cmp.hide()
+                sheet.find(key + "_detail_row").hide()
             }
         })
     }
 }
 
-const setupRoll = function(sheet: NavireSheet, eff: Component, fac: Component) {
+const setupRoll = function(sheet: NavireSheet, title: string, eff: Component, fac: Component, baseEffSignal: Signal<number> | Computed<number>, baseFacSignal: Signal<number> | Computed<number>, flagLoc: boolean) {
     return function() {
+        log(fac.id())
         let dice = "10"
         let nDice = eff.value()
         if(nDice<=0) {
             dice = "12"
             nDice = 1
         }
-        new RollBuilder(sheet.raw()).expression("(" + nDice + "d" + dice + " <={1:2} " + fac.value() + ")[eff_" + intToWord(eff.value()) + ",fac_" + intToWord(fac.value()) + "]").roll()
+        let expression = "(" + nDice + "d" + dice + " <={1:2} " + fac.value() + ")[eff_" + intToWord(eff.value()) + ",fac_" + intToWord(fac.value()) + "]"
+        if(flagLoc) {
+            let tagLoc = "localisation_navire"
+            if(sheet.mature.artimon()) {
+                tagLoc += ",artimon"
+            }
+            if(sheet.mature.misaine()) {
+                tagLoc += ",misaine"
+            }
+            if(sheet.mature.mat()) {
+                tagLoc += ",mat"
+            }
+            expression += " + 1d6[" + tagLoc + "]"
+        }
+        new RollBuilder(sheet.raw()).expression(expression).title(title).roll()
+        eff.value(baseEffSignal())
+        fac.value(baseFacSignal())
+        setVirtualColorFromSignal(eff, baseEffSignal)
+        setVirtualColorFromSignal(fac, baseFacSignal)
     }
 }
 
-export const setupCompGroupeRolls = function(sheet: NavireSheet) {
-    sheet.find("combat_roll").on("click", setupRoll(sheet, sheet.find("combat_eff"), sheet.find("combat_fac")))
-    sheet.find("canonnade_roll").on("click", setupRoll(sheet, sheet.find("canonnade_eff"), sheet.find("canonnade_fac")))
-    sheet.find("recharge_roll").on("click", setupRoll(sheet, sheet.find("recharge_eff"), sheet.find("recharge_fac")))
-    sheet.find("manoeuvre_roll").on("click", setupRoll(sheet, sheet.find("manoeuvre_eff"), sheet.find("manoeuvre_fac")))
-    sheet.find("habilete_roll").on("click", setupRoll(sheet, sheet.find("habilete_eff"), sheet.find("habilete_fac")))
-    sheet.find("ruse_roll").on("click", setupRoll(sheet, sheet.find("ruse_eff"), sheet.find("ruse_fac")))
-    sheet.find("tir_roll").on("click", setupRoll(sheet, sheet.find("tir_eff"), sheet.find("tir_fac")))
-}
 
 const valEffect = function(sheet: NavireSheet, categorie: string, role: PosteBord, comp: string) {
     effect(function() {
@@ -104,24 +94,62 @@ const metierEffect = function(sheet: NavireSheet, categorie: string, role: Poste
 const compRoll = function(sheet: NavireSheet, categorie: string, role: PosteBord, comp: string, i: number) {
     const suffix = i > 1 ? "_" + i : ""
     sheet.find(categorie + "_" + role + "_" + comp).on("click", setupRoll(
-        sheet, sheet.find(categorie + "_" + role + "_" + comp + "_val"), 
-        sheet.find(categorie + "_" + role + "_" + "metier" + suffix + "_val")
+        sheet, 
+        sheet.find(categorie + "_" + role + "_" + comp).text(),
+        sheet.find(categorie + "_" + role + "_" + comp + "_val"), 
+        sheet.find(categorie + "_" + role + "_" + "metier" + suffix + "_val"),
+        sheet.feuilleEquipage.commandement[role][comp], 
+        sheet.feuilleEquipage.commandement[role].metier,
+        false
     ))
+    
 }
 
 const handleVirtualValues = function(sheet: NavireSheet, categorie: string) {
-    sheet.find(categorie + "_eff_plus").on("click", function() {})
-    sheet.find(categorie + "_eff_min").on("click", function() {})
-    sheet.find(categorie + "_fac_plus").on("click", function() {})
-    sheet.find(categorie + "_fac_min").on("click", function() {})
+    sheet.find(categorie + "_eff_plus").on("click", function() {
+        const valCmp = sheet.find(categorie + "_eff") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) + 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe[categorie].efficacite)
+    })
+    sheet.find(categorie + "_eff_min").on("click", function() {
+        const valCmp = sheet.find(categorie + "_eff") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) - 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe[categorie].efficacite)
+    })
+    sheet.find(categorie + "_fac_plus").on("click", function() {
+        const valCmp = sheet.find(categorie + "_fac") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) + 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe[categorie].facilite)
+    })
+    sheet.find(categorie + "_fac_min").on("click", function() {
+        const valCmp = sheet.find(categorie + "_fac") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) - 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe[categorie].facilite)
+    })
 }
 
 const handleVirtualValuesDetail = function(sheet: NavireSheet, categorie: string, role: PosteBord, comp: string, i: number) {
     const suffix = i > 1 ? "_" + i : ""
-    sheet.find(categorie + "_" + role + "_" + comp + "_plus").on("click", function() {})
-    sheet.find(categorie + "_" + role + "_" + comp + "_min").on("click", function() {})
-    sheet.find(categorie + "_" + role + "_metier" + suffix + "_plus").on("click", function() {})
-    sheet.find(categorie + "_" + role + "_metier" + suffix + "_min").on("click", function() {})
+    sheet.find(categorie + "_" + role + "_" + comp + "_plus").on("click", function() {
+        const valCmp = sheet.find(categorie + "_" + role + "_" + comp + "_val") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) + 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.commandement[role][comp])
+    })
+    sheet.find(categorie + "_" + role + "_" + comp + "_min").on("click", function() {
+        const valCmp = sheet.find(categorie + "_" + role + "_" + comp + "_val") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) - 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.commandement[role][comp])
+    })
+    sheet.find(categorie + "_" + role + "_metier" + suffix + "_plus").on("click", function() {
+        const valCmp = sheet.find(categorie + "_" + role + "_metier" + suffix +"_val") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) + 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.commandement[role][comp])
+    })
+    sheet.find(categorie + "_" + role + "_metier" + suffix + "_min").on("click", function() {
+        const valCmp = sheet.find(categorie + "_" + role + "_metier" + suffix +"_val") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) - 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.commandement[role][comp])
+    })
 }
 
 export const displayValues = function(sheet: NavireSheet) {
@@ -134,10 +162,25 @@ export const displayValues = function(sheet: NavireSheet) {
                 handleVirtualValuesDetail(sheet, key, role as PosteBord, comps[i], i)
             }
         })
+        sheet.find("display_detail_" + key).on("click", handleDisplayBloc(sheet, key))
+        setupCompGroupeRoll(sheet, key)
         modifMatelotEffect(sheet, key)
         effEffect(sheet, key)
         facEffect(sheet, key)
         compFacEffect(sheet, key)
         handleVirtualValues(sheet, key)
     })
+}
+
+const setupCompGroupeRoll = function(sheet: NavireSheet, categorie: string) {
+    log(categorie)
+    sheet.find(categorie + "_roll").on("click", setupRoll(
+        sheet, 
+        sheet.find(categorie + "_roll").text(),
+        sheet.find(categorie + "_eff"), 
+        sheet.find(categorie + "_fac"), 
+        sheet.feuilleEquipage.competencesGroupe[categorie].efficacite, 
+        sheet.feuilleEquipage.competencesGroupe[categorie].facilite,
+        categorie === "canonnade"
+    ))
 }
