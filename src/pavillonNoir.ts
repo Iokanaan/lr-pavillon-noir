@@ -35,6 +35,7 @@ import { selectGestionComps, setupGestionSignalUpdates } from "./equipage/gestio
 import { displayValues } from "./equipage/comptencesGroupe"
 import { setupSignalUpdates } from "./equipage/commandement"
 import { gestionNombre } from "./equipage/nombre"
+import { santeEquipage } from "./equipage/sante"
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -167,7 +168,19 @@ init = function(sheet) {
             "mini_manoeuvre",
             "gardes",
             "soldats",
-            "rmt"
+            "rmt",
+            "cartes",
+            "instruments",
+            "otages",
+            "journal",
+            "pavillons",
+            "lettres",
+            "eau",
+            "vivres",
+            "bois",
+            "vivres_frais",
+            "boulets",
+            "soins"
         ]
         convertisseur(nSheet)
         setupRepeater(nSheet, "artillerie_repeater", setupArtillerieEditEntry, setupArtillerieDisplayEntry, onArtillerieDelete(nSheet))
@@ -185,6 +198,7 @@ init = function(sheet) {
         selectGestionComps(nSheet)
         displayValues(nSheet)
         gestionNombre(nSheet)
+        santeEquipage(nSheet)
     }
     if(sheet.id() === "PNJ") {
         const npcSheet = pnjSheet(sheet)

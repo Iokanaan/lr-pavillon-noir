@@ -28,6 +28,14 @@ export const setupEffects = function(sheet: NavireSheet) {
     }, [sheet.equipage.miniRecharge])
 
     effect(function() {
+        sheet.find("equipe_actuel_input").value(sheet.equipage.actuel())
+    }, [sheet.equipage.actuel])
+
+    effect(function() {
+        sheet.find("equipage_soins").value(sheet.equipage.soins())
+    }, [sheet.equipage.soins])
+
+    effect(function() {
         if(sheet.equipage.maxi() < sheet.equipage.actuel()) {
             sheet.find("equipe_maxi_label").addClass("text-danger")
         } else {
@@ -36,20 +44,20 @@ export const setupEffects = function(sheet: NavireSheet) {
     }, [sheet.equipage.maxi, sheet.equipage.actuel])
 
     effect(function() {
-        if(sheet.equipage.miniRecharge() > sheet.equipage.actuel()) {
+        if(sheet.equipage.miniRecharge() > sheet.equipage.valides()) {
             sheet.find("mini_recharge_label").addClass("text-danger")
         } else {
             sheet.find("mini_recharge_label").removeClass("text-danger")
         }
-    }, [sheet.equipage.miniRecharge, sheet.equipage.actuel])
+    }, [sheet.equipage.miniRecharge, sheet.equipage.valides])
 
     effect(function() {
-        if(sheet.equipage.miniManoeuvre() > sheet.equipage.actuel()) {
+        if(sheet.equipage.miniManoeuvre() > sheet.equipage.valides()) {
             sheet.find("mini_manoeuvre_label").addClass("text-danger")
         } else {
             sheet.find("mini_manoeuvre_label").removeClass("text-danger")
         }
-    }, [sheet.equipage.miniManoeuvre, sheet.equipage.actuel])
+    }, [sheet.equipage.miniManoeuvre, sheet.equipage.valides])
 
     sheet.find("mini_manoeuvre_input").on("update", function(cmp) {
         sheet.equipage.miniManoeuvre.set(+(cmp.value() as string))
@@ -59,7 +67,4 @@ export const setupEffects = function(sheet: NavireSheet) {
         sheet.equipage.maxi.set(+(cmp.value() as string))
     })
 
-    sheet.find("equipe_actuel_input").on("update", function(cmp) {
-        sheet.equipage.actuel.set(+(cmp.value() as string))
-    })
 }

@@ -55,7 +55,10 @@ declare global {
             miniManoeuvre: Signal<number>,
             miniRecharge: Computed<number>,
             maxi: Signal<number>,
-            actuel: Signal<number>
+            actuel: Signal<number>,
+            soins: Signal<number>,
+            valides: Computed<number>,
+            malusRecharge: Computed<number>
         }
         structure: {
             maxCoque: Signal<number>,
@@ -76,7 +79,10 @@ declare global {
         feuilleEquipage: {
             commandement: Record<PosteBord, Record<string, Signal<number>>>,
             gestion: Record<string, Record<string, Record<"efficacite"|"facilite", Signal<number>>>>,
-            competencesGroupe: Record<string, Record<"efficacite" | "facilite" | "modif_matelot", Computed<number>>>
+            competencesGroupe: Record<string, Record<"efficacite" | "facilite" | "modif_matelot" | "total_facilite", Computed<number>>>,
+            santeMax: Computed<number>,
+            detailSante: Record<"legere" | "serieuse" | "grave" | "critique", Signal<boolean>[]>,
+            malusSante: Computed<number>
         }
     }  & ExtendedSheet<NavireData>
 

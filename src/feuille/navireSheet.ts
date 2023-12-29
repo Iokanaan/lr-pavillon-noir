@@ -67,8 +67,44 @@ const buildFeuilleEquipage = function(sheet: Sheet) {
         })
         feuilleEquipage.competencesGroupe[key].efficacite = computed(avgSignals(dependenciesEff), dependenciesEff)
         feuilleEquipage.competencesGroupe[key].facilite = computed(avgSignals(dependenciesFac), dependenciesFac)
-        feuilleEquipage.competencesGroupe[key].modif_matelot = computed(function(){ return feuilleEquipage.competencesGroupe[key].efficacite() - 3 }, [feuilleEquipage.competencesGroupe[key].efficacite])
+        feuilleEquipage.competencesGroupe[key].modif_matelot = computed(function() { return feuilleEquipage.competencesGroupe[key].efficacite() - 3 }, [feuilleEquipage.competencesGroupe[key].efficacite])
+        feuilleEquipage.competencesGroupe[key].total_facilite = computed(function() { 
+            return feuilleEquipage.competencesGroupe[key].facilite() + feuilleEquipage.competencesGroupe[key].modif_matelot()
+        }, [
+            feuilleEquipage.competencesGroupe[key].facilite,
+            feuilleEquipage.competencesGroupe[key].modif_matelot
+        ])
     })
+    feuilleEquipage.santeMax = computed(function() {
+        return Math.max(-4, Math.min(4, feuilleEquipage.competencesGroupe.recharge.modif_matelot() + feuilleEquipage.competencesGroupe.combat.modif_matelot()))
+    }, [
+        feuilleEquipage.competencesGroupe.recharge.modif_matelot,
+        feuilleEquipage.competencesGroupe.combat.modif_matelot
+    ]) 
+    feuilleEquipage.detailSante = {}
+    feuilleEquipage.detailSante.legere = [ signal(sheet.get("sante_4").value()), signal(sheet.get("sante_5").value()) ]
+    feuilleEquipage.detailSante.serieuse = [ signal(sheet.get("sante_3").value()), signal(sheet.get("sante_6").value()) ]
+    feuilleEquipage.detailSante.grave = [ signal(sheet.get("sante_2").value()), signal(sheet.get("sante_7").value()) ]
+    feuilleEquipage.detailSante.critique = [ signal(sheet.get("sante_1").value()), signal(sheet.get("sante_8").value()) ]
+    feuilleEquipage.malusSante = computed(function() {
+        if(feuilleEquipage.detailSante.critique[0]() || feuilleEquipage.detailSante.critique[1]()) {
+            return -4
+        }
+        if(feuilleEquipage.detailSante.grave[0]() || feuilleEquipage.detailSante.grave[1]()) {
+            return -2
+        }
+        if(feuilleEquipage.detailSante.serieuse[0]() || feuilleEquipage.detailSante.serieuse[1]()) {
+            return -1
+        }
+        return 0
+    }, [
+        feuilleEquipage.detailSante.serieuse[0],
+        feuilleEquipage.detailSante.serieuse[1],
+        feuilleEquipage.detailSante.grave[0],
+        feuilleEquipage.detailSante.grave[1],
+        feuilleEquipage.detailSante.critique[0],
+        feuilleEquipage.detailSante.critique[1]
+    ])
     return feuilleEquipage
 }
 
@@ -147,7 +183,7 @@ const buildStructure = function(sheet: Sheet) {
             return "Ravagé"
         }
         if(degatsByLevel["Critique"] > 0 || degatsByLevel["Grave"] > 1) {
-            return "Critique"
+            return "Crit."
         }
         if(degatsByLevel["Grave"] > 0 || degatsByLevel["Sérieux"] > 1) {
             return "Grave"
@@ -191,9 +227,20 @@ const buildEquipage = function(sheet: Sheet, armementByEmplacement: Computed<Rec
                 nbHommes[0] += val.nbHommes
             }
         })
-        return nbHommes[0]
-    }, [armementByEmplacement])
-    equipage.actuel = signal(sheet.get("equipe_actuel_input").value() as number)
+        return nbHommes[0] + parseInt(equipage.miniManoeuvre())
+    }, [armementByEmplacement, equipage.miniManoeuvre])
+    equipage.actuel = signal(sheet.get("mesure_total").value() as number)
+    equipage.soins = signal(sheet.get("mesure_soins").value() as number)
+    equipage.valides = computed(function() {
+        return equipage.actuel() - equipage.soins()
+    }, [equipage.actuel, equipage.soins])
+    equipage.malusRecharge = computed(function() {
+        const ratio = equipage.valides() / equipage.miniRecharge()
+        if(ratio > 1) {
+            return 0
+        }
+        return mesureToValeur(ratio)
+    }, [equipage.actuel, equipage.miniRecharge])
     return equipage
 }
 

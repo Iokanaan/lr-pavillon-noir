@@ -13,16 +13,23 @@ const handleDisplayBloc = function(sheet: NavireSheet, bloc: string) {
     }
 }
 
-const setupRoll = function(sheet: NavireSheet, title: string, eff: Component, fac: Component, baseEffSignal: Signal<number> | Computed<number>, baseFacSignal: Signal<number> | Computed<number>, flagLoc: boolean) {
+const setupRoll = function(sheet: NavireSheet, title: string, eff: Component, fac: Component, baseEffSignal: Signal<number> | Computed<number>, baseFacSignal: Signal<number> | Computed<number>, flagCompGroupe: boolean, flagLoc: boolean, flagRecharge: boolean) {
     return function() {
-        log(fac.id())
         let dice = "10"
-        let nDice = eff.value()
+        let nDice = parseInt(eff.value())
+        if(flagCompGroupe) {
+            log("apply " + sheet.feuilleEquipage.malusSante())
+            nDice -= Math.abs(sheet.feuilleEquipage.malusSante())
+        }
+        if(flagRecharge) {
+            nDice -= Math.abs(sheet.equipage.malusRecharge())
+        }
+        log(sheet.equipage.malusRecharge())
+        log(nDice)
         if(nDice<=0) {
             dice = "12"
-            nDice = 1
         }
-        let expression = "(" + nDice + "d" + dice + " <={1:2} " + fac.value() + ")[eff_" + intToWord(eff.value()) + ",fac_" + intToWord(fac.value()) + "]"
+        let expression = "(" + Math.max(nDice, 1) + "d" + dice + " <={1:2} " + fac.value() + ")[eff_" + intToWord(Math.max(nDice, 0)) + ",fac_" + intToWord(fac.value()) + "]"
         if(flagLoc) {
             let tagLoc = "localisation_navire"
             if(sheet.mature.artimon()) {
@@ -66,11 +73,9 @@ const facEffect = function(sheet: NavireSheet, categorie: string) {
 
 const compFacEffect = function(sheet: NavireSheet, categorie: string) {
     effect(function() {
-        sheet.find(categorie + "_fac").value(sheet.feuilleEquipage.competencesGroupe[categorie].facilite() + sheet.feuilleEquipage.competencesGroupe[categorie].modif_matelot())
-    }, [
-        sheet.feuilleEquipage.competencesGroupe[categorie].facilite,
-        sheet.feuilleEquipage.competencesGroupe[categorie].modif_matelot
-    ])
+        log(sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite())
+        sheet.find(categorie + "_fac").value(sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite())
+    }, [sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite])
 }
 
 const modifMatelotEffect = function(sheet: NavireSheet, categorie: string) {
@@ -100,6 +105,8 @@ const compRoll = function(sheet: NavireSheet, categorie: string, role: PosteBord
         sheet.find(categorie + "_" + role + "_" + "metier" + suffix + "_val"),
         sheet.feuilleEquipage.commandement[role][comp], 
         sheet.feuilleEquipage.commandement[role].metier,
+        false,
+        false,
         false
     ))
     
@@ -119,12 +126,12 @@ const handleVirtualValues = function(sheet: NavireSheet, categorie: string) {
     sheet.find(categorie + "_fac_plus").on("click", function() {
         const valCmp = sheet.find(categorie + "_fac") as Component<string>
         valCmp.value((parseInt(valCmp.value()) + 1).toString())
-        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe[categorie].facilite)
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite)
     })
     sheet.find(categorie + "_fac_min").on("click", function() {
         const valCmp = sheet.find(categorie + "_fac") as Component<string>
         valCmp.value((parseInt(valCmp.value()) - 1).toString())
-        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe[categorie].facilite)
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite)
     })
 }
 
@@ -170,17 +177,64 @@ export const displayValues = function(sheet: NavireSheet) {
         compFacEffect(sheet, key)
         handleVirtualValues(sheet, key)
     })
+
+    // Gestion specifique du tir
+    sheet.find("tir_roll").on("click", setupRoll(
+        sheet, 
+        sheet.find("tir_roll").text(),
+        sheet.find("tir_eff"), 
+        sheet.find("tir_fac"), 
+        sheet.feuilleEquipage.competencesGroupe.combat.efficacite, 
+        sheet.feuilleEquipage.competencesGroupe.combat.total_facilite,
+        true,
+        false,
+        false
+    ))
+
+    effect(function() {
+        sheet.find("tir_eff").value(sheet.feuilleEquipage.competencesGroupe.combat.efficacite())
+    }, [sheet.feuilleEquipage.competencesGroupe.combat.efficacite])
+
+    effect(function() {
+        sheet.find("tir_fac").value(sheet.feuilleEquipage.competencesGroupe.combat.total_facilite())
+    }, [sheet.feuilleEquipage.competencesGroupe.combat.total_facilite])
+
+    sheet.find("tir_eff_plus").on("click", function() {
+        const valCmp = sheet.find("tir_eff") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) + 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe.combat.efficacite)
+    })
+    sheet.find("tir_eff_min").on("click", function() {
+        const valCmp = sheet.find("tir_eff") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) - 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe.combat.efficacite)
+    })
+    sheet.find("tir_fac_plus").on("click", function() {
+        const valCmp = sheet.find("tir_fac") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) + 1).toString())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe.combat.total_facilite)
+    })
+    sheet.find("tir_fac_min").on("click", function() {
+        const valCmp = sheet.find("tir_fac") as Component<string>
+        valCmp.value((parseInt(valCmp.value()) - 1).toString())
+        log(sheet.feuilleEquipage.competencesGroupe.combat.facilite())
+        setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe.combat.total_facilite)
+    })
+
 }
 
 const setupCompGroupeRoll = function(sheet: NavireSheet, categorie: string) {
-    log(categorie)
     sheet.find(categorie + "_roll").on("click", setupRoll(
         sheet, 
         sheet.find(categorie + "_roll").text(),
         sheet.find(categorie + "_eff"), 
         sheet.find(categorie + "_fac"), 
         sheet.feuilleEquipage.competencesGroupe[categorie].efficacite, 
-        sheet.feuilleEquipage.competencesGroupe[categorie].facilite,
-        categorie === "canonnade"
+        sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite,
+        true,
+        categorie === "canonnade",
+        categorie === "recharge"
     ))
+
+   
 }
