@@ -19,6 +19,14 @@ export const navireSheet = function(sheet: Sheet) {
     _pSheet.equipage = buildEquipage(sheet, _pSheet.armement.armementByEmplacement)
     _pSheet.structure = buildStructure(sheet)
     _pSheet.feuilleEquipage = buildFeuilleEquipage(sheet)
+    _pSheet.chargeByEntry = signal({}) as Signal<Record<string, number>>
+    _pSheet.charge = computed(function() {
+        const chargeTotal = [0]
+        each(_pSheet.chargeByEntry(), function(val: number) {
+            chargeTotal[0] = chargeTotal[0] + val
+        })
+        return chargeTotal[0]
+    }, [_pSheet.chargeByEntry])
     return _pSheet as NavireSheet
 }
 
@@ -140,31 +148,80 @@ const buildStructure = function(sheet: Sheet) {
     }
 
     const degatsCoqueBabord = computed(function() {
-        return degatProcessor(coqueBabord(), psCoqueMax())
+        const label = degatProcessor(coqueBabord(), psCoqueMax())
+        if(label === "Critique") {
+            return label + " (c)"
+        }
+        if(label === "Ravagé") {
+            return label + " (d)"
+        }
+        return label
     }, [psCoqueMax, coqueBabord])
 
     const degatsCoqueTribord = computed(function() {
-        return degatProcessor(coqueTribord(), psCoqueMax())
+        const label = degatProcessor(coqueTribord(), psCoqueMax())
+        if(label === "Critique") {
+            return label + " (c)"
+        }
+        if(label === "Ravagé") {
+            return label + " (d)"
+        }
+        return label
     }, [psCoqueMax, coqueTribord])
 
     const degatsCoquePoupe = computed(function() {
-        return degatProcessor(coquePoupe(), psCoqueMax())
+        const label = degatProcessor(coquePoupe(), psCoqueMax())
+        if(label === "Critique") {
+            return label + " (e)"
+        }
+        if(label === "Ravagé") {
+            return label + " (f)"
+        }
+        return label
     }, [psCoqueMax, coquePoupe])
 
     const degatsCoqueProue = computed(function() {
-        return degatProcessor(coqueProue(), psCoqueMax())
+        const label = degatProcessor(coqueProue(), psCoqueMax())
+        if(label === "Critique") {
+            return label + " (c)"
+        }
+        if(label === "Ravagé") {
+            return label + " (d)"
+        }
+        return label
     }, [psCoqueMax, coqueProue])
 
     const degatsGrandMat = computed(function() {
-        return degatProcessor(grandMat(), psMatMax())
+        const label = degatProcessor(grandMat(), psMatMax())
+        if(label === "Critique") {
+            return label + " (a)"
+        }
+        if(label === "Ravagé") {
+            return label + " (b)"
+        }
+        return label
     }, [psMatMax, grandMat])
 
     const degatsArtimon = computed(function() {
-        return degatProcessor(artimon(), psMatMax())
+        const label =  degatProcessor(artimon(), psMatMax())
+        if(label === "Critique") {
+            return label + " (a)"
+        }
+        if(label === "Ravagé") {
+            return label + " (b)"
+        }
+        return label
     }, [psMatMax, artimon])
 
     const degatsMisaine = computed(function() {
-        return degatProcessor(misaine(), psMatMax())
+        const label = degatProcessor(misaine(), psMatMax())
+        if(label === "Critique") {
+            return label + " (a)"
+        }
+        if(label === "Ravagé") {
+            return label + " (b)"
+        }
+        return label
     }, [psMatMax, misaine])
 
     const degatsMatureComputed = computed(function() {
@@ -173,17 +230,17 @@ const buildStructure = function(sheet: Sheet) {
             "Léger": 0,
             "Sérieux": 0,
             "Grave": 0,
-            "Critique": 0,
-            "Ravagé": 0
+            "Critique (a)": 0,
+            "Ravagé (b)": 0
         }
         degatsByLevel[degatsArtimon()]++
         degatsByLevel[degatsGrandMat()]++
         degatsByLevel[degatsMisaine()]++
-        if(degatsByLevel["Ravagé"] > 0 || degatsByLevel["Critique"] > 1) {
+        if(degatsByLevel["Ravagé (b)"] > 0 || degatsByLevel["Critique (a)"] > 1) {
             return "Ravagé"
         }
-        if(degatsByLevel["Critique"] > 0 || degatsByLevel["Grave"] > 1) {
-            return "Crit."
+        if(degatsByLevel["Critique (a)"] > 0 || degatsByLevel["Grave"] > 1) {
+            return "Critique"
         }
         if(degatsByLevel["Grave"] > 0 || degatsByLevel["Sérieux"] > 1) {
             return "Grave"
@@ -201,6 +258,21 @@ const buildStructure = function(sheet: Sheet) {
         maxCoque: psCoqueMax,
         maxMat: psMatMax,
         degatsMature: degatsMatureComputed,
+        malusMature: computed(function() {
+            switch(degatsMatureComputed()) {
+                case "Sérieux":
+                    return -1
+                case "Grave":
+                    return -2
+                case "Critique (a)":
+                    return -4
+                case "Ravagé (b)":
+                    return -6
+                default:
+                    return 0
+            }
+        }, [degatsMatureComputed]),
+        voilure: signal(sheet.get("voilure_choice").value()),
         coque: {
             babord: { ps: coqueBabord, degats: degatsCoqueBabord },
             tribord: { ps: coqueTribord, degats: degatsCoqueTribord },
@@ -213,6 +285,20 @@ const buildStructure = function(sheet: Sheet) {
             artimon: { ps: artimon, degats: degatsArtimon },
         },
     } as any
+    structure.modifVoilureManoeuvre = computed(function() {
+        const entity = Tables.get("voilures").get(structure.voilure())
+        if(entity !== null && entity !== undefined) {
+            return entity.mod_manoeuvre
+        }
+        return 0
+    }, [structure.voilure])
+    structure.modifVoilureVitesse = computed(function() {
+        const entity = Tables.get("voilures").get(structure.voilure())
+        if(entity !== null && entity !== undefined) {
+            return entity.mod_vitesse
+        }
+        return 0
+    }, [structure.voilure]);
     return structure
 }
 
@@ -224,7 +310,7 @@ const buildEquipage = function(sheet: Sheet, armementByEmplacement: Computed<Rec
         const nbHommes = [0]
         each(armementByEmplacement(), function(val, id) {
             if(id !== "muraille_chasse" && id !== "muraille_fuite") {
-                nbHommes[0] += val.nbHommes
+                nbHommes[0] = nbHommes[0] + val.nbHommes
             }
         })
         return nbHommes[0] + parseInt(equipage.miniManoeuvre())
@@ -240,7 +326,7 @@ const buildEquipage = function(sheet: Sheet, armementByEmplacement: Computed<Rec
             return 0
         }
         return mesureToValeur(ratio)
-    }, [equipage.actuel, equipage.miniRecharge])
+    }, [equipage.valides, equipage.miniRecharge])
     return equipage
 }
 
@@ -256,19 +342,23 @@ const buildArmement = function(sheet: Sheet) {
         muraille_fuite: sheet.get("muraille_fuite_charge").value()
     })
     const armementByEmplacement = computed(function() {
-        const cal: Record<ZoneTirArtillerie, { nbCanons: number, degats: number, degatsValeur: string, pertes: number, pertesValeur: string, portee: string, nbHommes: number }> = {
-            bordee: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0},
-            chasse: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0 },
-            fuite: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0 },
-            muraille: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0 },
-            muraille_chasse: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0 },
-            muraille_fuite: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0 },
+        const cal: Record<ZoneTirArtillerie, { nbCanons: number, degats: number, degatsValeur: string, pertes: number, pertesValeur: string, portee: string, nbHommes: number, tonnage: number }> = {
+            bordee: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0, tonnage: 0},
+            chasse: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0, tonnage: 0 },
+            fuite: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0, tonnage: 0 },
+            muraille: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0, tonnage: 0 },
+            muraille_chasse: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0, tonnage: 0 },
+            muraille_fuite: { nbCanons: 0, degats: 0, degatsValeur: "-", pertes: 0, pertesValeur: "-", portee: "300m", nbHommes: 0, tonnage: 0 },
         }
         each(armementByEntry(), function(val) {
             cal[val.emplacement].nbCanons += val.nb_canons
             cal[val.emplacement].degats += ((+(val.calibre) + 0.0) / 6) * val.nb_canons
             cal[val.emplacement].pertes += ((+(val.pertes) + 0.0) / 6) * val.nb_canons
-            cal[val.emplacement].nbHommes += val.nb_hommes
+            cal[val.emplacement].nbHommes += val.nb_hommes * val.nb_canons
+            cal[val.emplacement].tonnage += val.tonnage * val.nb_canons
+            if(val.emplacement === "bordee") {
+                cal[val.emplacement].tonnage = cal[val.emplacement].tonnage * 2
+            }
             if(val.emplacement === "muraille" && val.tir_chasse) {
                 cal["muraille_chasse"].degats += ((+(val.calibre) + 0.0) / 6) * val.nb_canons
                 cal["muraille_chasse"].pertes += ((+(val.pertes) + 0.0) / 6) * val.nb_canons
@@ -325,11 +415,11 @@ const buildArmement = function(sheet: Sheet) {
     }, [armementByEntry, typeBouletByEmplacement]) 
     const tonnage = computed(function() {
         const tonnageTotal = [0]
-        each(armementByEntry(), function(val) {
-            tonnageTotal[0] += val.tonnage
+        each(armementByEmplacement(), function(val) {
+            tonnageTotal[0] = tonnageTotal[0] + val.tonnage
         })
         return tonnageTotal[0]
-    }, [armementByEntry])
+    }, [armementByEmplacement])
     armement.armementByEntry = armementByEntry
     armement.typeBouletByEmplacement = typeBouletByEmplacement
     armement.armementByEmplacement = armementByEmplacement

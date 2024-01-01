@@ -11,6 +11,16 @@ export const mapCompetence = function(entity: CompetenceEntity, cat: string): Co
     }
 }
 
+export const mapCategorie = function(entity: CategorieNavireEntity): CategorieNavire {
+    return {
+        id: entity.id,
+        name: entity.name,
+        rmt: entity.rmt,
+        duree_dessins: entity.duree_dessins,
+        modif_tir: parseInt(entity.modif_tir),
+    }
+}
+
 export const mapSequelle = function(e: SequelleEntity): Sequelle {
     return  {
         min: parseInt(e.min),

@@ -13,34 +13,26 @@ const handleDisplayBloc = function(sheet: NavireSheet, bloc: string) {
     }
 }
 
-const setupRoll = function(sheet: NavireSheet, title: string, eff: Component, fac: Component, baseEffSignal: Signal<number> | Computed<number>, baseFacSignal: Signal<number> | Computed<number>, flagCompGroupe: boolean, flagLoc: boolean, flagRecharge: boolean) {
+const setupRoll = function(sheet: NavireSheet, title: string, eff: Component, fac: Component, baseEffSignal: Signal<number> | Computed<number>, baseFacSignal: Signal<number> | Computed<number>, flagCompGroupe: boolean, flagLoc: boolean, flagRecharge: boolean, flagManoeuvre: boolean) {
     return function() {
         let dice = "10"
         let nDice = parseInt(eff.value())
+        let totalFac = parseInt(fac.value())
         if(flagCompGroupe) {
-            log("apply " + sheet.feuilleEquipage.malusSante())
             nDice -= Math.abs(sheet.feuilleEquipage.malusSante())
         }
         if(flagRecharge) {
             nDice -= Math.abs(sheet.equipage.malusRecharge())
         }
-        log(sheet.equipage.malusRecharge())
-        log(nDice)
         if(nDice<=0) {
             dice = "12"
         }
-        let expression = "(" + Math.max(nDice, 1) + "d" + dice + " <={1:2} " + fac.value() + ")[eff_" + intToWord(Math.max(nDice, 0)) + ",fac_" + intToWord(fac.value()) + "]"
+        if(flagManoeuvre) {
+            totalFac = +(totalFac) + +(sheet.structure.modifVoilureManoeuvre()) + +(sheet.structure.malusMature())
+        }
+        let expression = "(" + Math.max(nDice, 1) + "d" + dice + " <={1:2} " + totalFac + ")[eff_" + intToWord(Math.max(nDice, 0)) + ",fac_" + intToWord(totalFac) + "]"
         if(flagLoc) {
             let tagLoc = "localisation_navire"
-            if(sheet.mature.artimon()) {
-                tagLoc += ",artimon"
-            }
-            if(sheet.mature.misaine()) {
-                tagLoc += ",misaine"
-            }
-            if(sheet.mature.mat()) {
-                tagLoc += ",mat"
-            }
             expression += " + 1d6[" + tagLoc + "]"
         }
         new RollBuilder(sheet.raw()).expression(expression).title(title).roll()
@@ -73,7 +65,6 @@ const facEffect = function(sheet: NavireSheet, categorie: string) {
 
 const compFacEffect = function(sheet: NavireSheet, categorie: string) {
     effect(function() {
-        log(sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite())
         sheet.find(categorie + "_fac").value(sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite())
     }, [sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite])
 }
@@ -92,6 +83,7 @@ const modifMatelotEffect = function(sheet: NavireSheet, categorie: string) {
 const metierEffect = function(sheet: NavireSheet, categorie: string, role: PosteBord, i: number) {
     const suffix = i > 1 ? "_" + i : ""
     effect(function() {
+        log(categorie + "_" + role + "_metier" + suffix + "_val")
         sheet.find(categorie + "_" + role + "_metier" + suffix + "_val").value(sheet.feuilleEquipage.commandement[role].metier())
     }, [sheet.feuilleEquipage.commandement[role].metier])
 }
@@ -105,6 +97,7 @@ const compRoll = function(sheet: NavireSheet, categorie: string, role: PosteBord
         sheet.find(categorie + "_" + role + "_" + "metier" + suffix + "_val"),
         sheet.feuilleEquipage.commandement[role][comp], 
         sheet.feuilleEquipage.commandement[role].metier,
+        false,
         false,
         false,
         false
@@ -164,9 +157,9 @@ export const displayValues = function(sheet: NavireSheet) {
         each(roles, function(comps, role) {
             for(let i=0; i<comps.length;i++) {
                 valEffect(sheet, key, role as PosteBord, comps[i])
-                metierEffect(sheet, key, role as PosteBord, i)
-                compRoll(sheet, key, role as PosteBord, comps[i], i)
-                handleVirtualValuesDetail(sheet, key, role as PosteBord, comps[i], i)
+                metierEffect(sheet, key, role as PosteBord, i + 1)
+                compRoll(sheet, key, role as PosteBord, comps[i], i + 1)
+                handleVirtualValuesDetail(sheet, key, role as PosteBord, comps[i], i + 1)
             }
         })
         sheet.find("display_detail_" + key).on("click", handleDisplayBloc(sheet, key))
@@ -187,6 +180,7 @@ export const displayValues = function(sheet: NavireSheet) {
         sheet.feuilleEquipage.competencesGroupe.combat.efficacite, 
         sheet.feuilleEquipage.competencesGroupe.combat.total_facilite,
         true,
+        false,
         false,
         false
     ))
@@ -217,7 +211,6 @@ export const displayValues = function(sheet: NavireSheet) {
     sheet.find("tir_fac_min").on("click", function() {
         const valCmp = sheet.find("tir_fac") as Component<string>
         valCmp.value((parseInt(valCmp.value()) - 1).toString())
-        log(sheet.feuilleEquipage.competencesGroupe.combat.facilite())
         setVirtualColorFromSignal(valCmp, sheet.feuilleEquipage.competencesGroupe.combat.total_facilite)
     })
 
@@ -233,7 +226,8 @@ const setupCompGroupeRoll = function(sheet: NavireSheet, categorie: string) {
         sheet.feuilleEquipage.competencesGroupe[categorie].total_facilite,
         true,
         categorie === "canonnade",
-        categorie === "recharge"
+        categorie === "recharge",
+        categorie === "manoeuvre"
     ))
 
    

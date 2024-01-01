@@ -72,4 +72,20 @@ export const santeEquipage = function(nSheet: NavireSheet) {
     nSheet.find("sante_8").on("update", function(cmp) {
         nSheet.feuilleEquipage.detailSante.critique[1].set(cmp.value() as boolean)
     })
+
+    const seqRow1 = nSheet.find('sequelles_equipage_row_1') as Component<null>
+    const seqRow2 = nSheet.find('sequelles_equipage_row_2') as Component<null>
+    const titleCmp = nSheet.find('sequelles_equipage_title') as Component<string>
+    seqRow1.hide()
+    seqRow2.hide()
+    titleCmp.on('click', function() {
+        if(seqRow1.visible()) {
+            seqRow1.hide()
+            seqRow2.hide()
+        } else {
+            seqRow1.show()
+            seqRow2.show()
+        }
+    })
 }
+

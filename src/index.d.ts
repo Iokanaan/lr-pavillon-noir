@@ -38,8 +38,15 @@ declare global {
         name: string
     }
 
+    type ChargeData = {
+        designation: string,
+        tonnage: number
+    }
+
     type NavireSheet = {
         entryStates: Record<string, Record<string, RepeaterState | undefined>>,
+        charge: Computed<number>,
+        chargeByEntry: Signal<Record<string, number>>
         mature: {
             artimon: Signal<boolean>,
             misaine: Signal<boolean>,
@@ -49,8 +56,8 @@ declare global {
             armementByEntry: Signal<Record<string, ArtillerieData>>,
             typeBouletByEmplacement: Signal<Record<ZoneTirArtillerie, string>>,
             tonnage: Computed<number>,
-            armementByEmplacement: Computed<Record<ZoneTirArtillerie, { nbCanons: number, degats: number, degatsValeur: string, pertes: number, pertesValeur: string, portee: string, nbHommes: number }>>,
-        },
+            armementByEmplacement: Computed<Record<ZoneTirArtillerie, { nbCanons: number, degats: number, degatsValeur: string, pertes: number, pertesValeur: string, portee: string, nbHommes: number, tonnage: number }>>,
+        },0
         equipage: {
             miniManoeuvre: Signal<number>,
             miniRecharge: Computed<number>,
@@ -64,6 +71,10 @@ declare global {
             maxCoque: Signal<number>,
             maxMat: Signal<number>,
             degatsMature: Computed<string>,
+            malusMature: Computed<number>,
+            voilure: Signal<string>,
+            modifVoilureManoeuvre: Computed<number>,
+            modifVoilureVitesse: Computed<number>,
             coque: {
                 tribord: { ps: Signal<number>, degats: Computed<string> },
                 babord: { ps: Signal<number>, degats: Computed<string> },
@@ -448,6 +459,22 @@ declare global {
     type TypeCompEntity = {
         id: string,
         name: string
+    }
+
+    type CategorieNavireEntity = {
+        id: string,
+        name: string,
+        rmt: string,
+        duree_dessins: string,
+        modif_tir: string
+    }
+    
+    type CategorieNavire = {
+        id: string,
+        name: string,
+        rmt: string,
+        duree_dessins: string,
+        modif_tir: number
     }
 
     type TypeComp = {

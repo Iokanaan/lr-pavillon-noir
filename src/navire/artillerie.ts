@@ -64,6 +64,13 @@ export const setupArtillerieEditEntry = function(entry: Component<ArtillerieData
 }
 
 export const setupArtillerieDisplayEntry = function(entry: Component<ArtillerieData>) {
+    let tonnageTotal = +(entry.value().nb_canons) * +(entry.value().tonnage)
+    if(entry.value().emplacement === "bordee") {
+        tonnageTotal = tonnageTotal * 2
+    }
+    log(Tables.get("places_artillerie").get(entry.value().emplacement).name)
+    entry.find("emplacement_label").text(Tables.get("places_artillerie").get(entry.value().emplacement).name)
+    entry.find("tonnage_calcule").text(tonnageTotal.toString())
     const sheet = globalNavireSheets[entry.sheet().getSheetId()]
     const allArmemement = sheet.armement.armementByEntry()
     allArmemement[entry.id()] = entry.value()

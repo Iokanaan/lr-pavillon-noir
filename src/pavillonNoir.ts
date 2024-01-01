@@ -27,7 +27,7 @@ import { setupXp } from "./main/xp"
 import { setParametrage } from "./parametrage/parametrage"
 import { setupPnjAttribut } from "./main/pnjAttributs"
 import { convertisseur } from "./navire/convertisseur"
-import { setupEtatMature, toggleMature } from "./navire/mature"
+import { setupEtatMature, setupVoilure, toggleMature } from "./navire/mature"
 import { onArtillerieDelete, setupArtillerieDisplayEntry, setupArtillerieEditEntry, setupDegats, setupTonnageArtillerie } from "./navire/artillerie"
 import { setupCoque } from "./navire/coque"
 import { onJournalDelete, setupJournalDisplayEntry, setupJournalPagination } from "./journal/journal"
@@ -36,6 +36,11 @@ import { displayValues } from "./equipage/comptencesGroupe"
 import { setupSignalUpdates } from "./equipage/commandement"
 import { gestionNombre } from "./equipage/nombre"
 import { santeEquipage } from "./equipage/sante"
+import { setupChargeDisplayEntry, setupTotalTonnage } from "./navire/charge"
+//TODO
+// tonnages
+// traits de réputation
+// calculer automatiquement les modif recharge par emplacement
 
 // Gestion des résultats de dés
 initRoll = function(result: DiceResult, callback: DiceResultCallback) {
@@ -161,14 +166,12 @@ init = function(sheet) {
             "greement",
             "tirant",
             "proue",
-            "manoeuvrabilite",
             "immergee",
             "hors_tout",
             "equipe_maxi",
             "mini_manoeuvre",
             "gardes",
             "soldats",
-            "rmt",
             "cartes",
             "instruments",
             "otages",
@@ -180,7 +183,20 @@ init = function(sheet) {
             "bois",
             "vivres_frais",
             "boulets",
-            "soins"
+            "soins",
+            "modif_reussite_tribord",
+            "modif_reussite_babord",
+            "modif_reussite_proue",
+            "modif_reussite_poupe",
+            "modif_reussite_mat",
+            "modif_reussite_misaine",
+            "modif_reussite_artimon",
+            "manoeuvrabilite",
+            "pres",
+            "largue",
+            "grand_largue",
+            "vent_arriere",
+            "p_jour"
         ]
         convertisseur(nSheet)
         setupRepeater(nSheet, "artillerie_repeater", setupArtillerieEditEntry, setupArtillerieDisplayEntry, onArtillerieDelete(nSheet))
@@ -199,6 +215,9 @@ init = function(sheet) {
         displayValues(nSheet)
         gestionNombre(nSheet)
         santeEquipage(nSheet)
+        setupVoilure(nSheet)
+        setupRepeater(nSheet, "charge_repeater", null, setupChargeDisplayEntry, null)
+        setupTotalTonnage(nSheet)
     }
     if(sheet.id() === "PNJ") {
         const npcSheet = pnjSheet(sheet)

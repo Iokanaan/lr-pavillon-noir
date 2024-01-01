@@ -36,7 +36,8 @@ declare global {
         get(elem: 'types_professions' | 'types_postes_bord'): Table<ProfessionTypeEntity>
         get(elem: 'glo' | 'inf'): Table<ReputationEntity>
         get(elem: 'armes'): Table<WeaponEntity>
-        get(elem: 'sequelles_tete' | 'sequelles_torse' | 'sequelles_jambe' | 'sequelles_bras'): Table<SequelleEntity>
+        get(elem: 'sequelles_tete' | 'sequelles_torse' | 'sequelles_jambe' | 'sequelles_bras' | 'sequelles_equipage'): Table<SequelleEntity>
+        get(elem: 'categories_naivre'): Table<CategorieNavireEntity>,
         get(elem: 'localisations'): Table<LocalisationEntity>,
         get(elem: 'escrimes'): Table<EscrimeEntity>,
         get(elem: 'manoeuvres'): Table<ManoeuvreEntity>,

@@ -14,11 +14,20 @@ export const registreNavire = function(sheet: NavireSheet, label: string) {
     sheet.find(label + "_input").on("update", function(cmp) {
         cmp.hide()
         sheet.find(label + "_label").show()
-        if(cmp.value() !== "") {
-            sheet.find(label + "_label").value(cmp.value())
-        } else {
-            sheet.find(label + "_label").value(" ")
+        if(label === "categorie") {
+            sheet.find(label + "_label").value(cmp.text())
+            const catData = Tables.get("categories_navire").get(cmp.value())
+            sheet.find("rmt_label").value(catData.rmt)
+            sheet.find("modif_tir_label").value(catData.modif_tir)
+            sheet.find("duree_dessins_label").value(catData.duree_dessins)
+        } else { 
+            if(cmp.value() !== "") {
+                sheet.find(label + "_label").value(cmp.value())
+            } else {
+                sheet.find(label + "_label").value(" ")
+            }
         }
+
     })
 }
 

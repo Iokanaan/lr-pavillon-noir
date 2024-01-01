@@ -31,6 +31,10 @@ export const getSequelleData = function(total: number, tags: string[]) {
     } else if(tags.indexOf('jambe_gauche') !== -1) {
         table = Tables.get("sequelles_jambe")
         localisation = _("Jambe gauche")
+    } else if(tags.indexOf('equipage') !== -1) {
+        log("get equipage table")
+        table = Tables.get("sequelles_equipage")
+        localisation = _("Équipage")
     } else {
         log("Unknown sequelle type")
         return undefined

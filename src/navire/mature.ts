@@ -53,6 +53,10 @@ export const setupEtatMature = function(sheet: NavireSheet) {
     effect(function() {
         sheet.find("etat_mature_label").value(sheet.structure.degatsMature())
     }, [sheet.structure.degatsMature])
+
+    effect(function() {
+        sheet.find("malus_mature").value("Malus : " + sheet.structure.malusMature())
+    },[sheet.structure.malusMature])
 }
 
 export const toggleMature = function(sheet: NavireSheet) {
@@ -168,4 +172,16 @@ export const toggleMature = function(sheet: NavireSheet) {
             misaineTitleCmp.value("**Misaine**")
         }
     }, [sheet.mature.artimon, sheet.mature.misaine, sheet.mature.mat])
+}
+
+export const setupVoilure = function(sheet: NavireSheet) {
+    sheet.find("voilure_choice").on("update", function(cmp) {
+        sheet.structure.voilure.set(cmp.value() as string)
+    })
+    effect(function() {
+        sheet.find("modif_voilure_vitesse_val").value(sheet.structure.modifVoilureVitesse())
+    }, [sheet.structure.modifVoilureVitesse])
+    effect(function() {
+        sheet.find("modif_voilure_manoeuvre_val").value(sheet.structure.modifVoilureManoeuvre())
+    }, [sheet.structure.modifVoilureManoeuvre])
 }
